@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Z80 Assembly</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="Stylesheet" href="normal.css">
+</head>
+<body>
+<h1>Z80 Assembly - Instructions: Moving Data</h1>
+<h2>LD</h2>
+<p>Syntax: <code>ld op1,op2</code></p>
+<p>The <code>ld</code> instruction copies the value of the second operand into the first operand. It does not alter any of the flags, except for the special cases of reading the <tt>I</tt> or <tt>R</tt> registers. The two operands must fit in size; they can be either 8 or 16 bits long. The two tables below show all the possibilities. The first operand is on the left column, the second on the top row. <var>imm</var> denotes an immediate (either 8 or 16-bit constant), <var>n</var> is a signed 8-bit integer (ranging from -128 to 127). <var>ofs</var> is a 16-bit memory address.</p>
+<h3>8-bit combinations</h3>
+<table border="1" cellspacing="0" cellpadding="2" align="center">
+<tr><td>&nbsp;</td><td>imm</td><td>A</td><td>B</td><td>C</td><td>D</td><td>E</td><td>H</td><td>L</td><td>IXH</td><td>IXL</td><td>IYH</td><td>IYL</td><td>(BC)</td><td>(DE)</td><td>(HL)</td><td>(IX+n)</td><td>(IY+n)</td><td>(ofs)</td><td>I</td><td>R</td></tr>
+<tr><td>A</td><td>X</td><td>N</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>*</td><td>*</td></tr>
+<tr><td>B</td><td>X</td><td>X</td><td>N</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>X</td><td>X</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>C</td><td>X</td><td>X</td><td>X</td><td>N</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>X</td><td>X</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>D</td><td>X</td><td>X</td><td>X</td><td>X</td><td>N</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>X</td><td>X</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>E</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>N</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>X</td><td>X</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>H</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>N</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>X</td><td>X</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>L</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>N</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>X</td><td>X</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>IXH</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>***</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>IXL</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>X</td><td>***</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>IYH</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>***</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>IYL</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>X</td><td>***</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>(BC)</td><td>&nbsp;</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>(DE)</td><td>&nbsp;</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>(HL)</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>**</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>(IX+n)</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>**</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>(IY+n)</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>**</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>(ofs)</td><td>&nbsp;</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>I</td><td>&nbsp;</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>R</td><td>&nbsp;</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+</table>
+<ul>
+<li>N: equivalent to a <code>nop</code>.</li>
+<li>*: alters the flags in the following way: preserves <kbd>C</kbd>; resets <kbd>H</kbd> and <kbd>N</kbd>; alters <kbd>Z</kbd>, <kbd>S</kbd> and <kbd>P/V</kbd>.</li>
+<li>**: it is possible to create these instructions manually by knowing the opcodes of the Z80 CPU, but these combinations give the <code>halt</code> instruction.</li>
+<li>***: basically a <code>nop</code> that lasts for 9 T-states (an ordinary <code>nop</code> takes 4 cycles).</li>
+</ul>
+<h3>16-bit combinations</h3>
+<table border="1" cellspacing="0" cellpadding="2" align="center">
+<tr><td>&nbsp;</td><td>imm</td><td>BC</td><td>DE</td><td>HL</td><td>IX</td><td>IY</td><td>SP</td><td>(ofs)</td></tr>
+<tr><td>BC</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>X</td></tr>
+<tr><td>DE</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>X</td></tr>
+<tr><td>HL</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>X</td></tr>
+<tr><td>IX</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>X</td></tr>
+<tr><td>IY</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>X</td></tr>
+<tr><td>SP</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>X</td><td>X</td><td>X</td><td>&nbsp;</td><td>X</td></tr>
+<tr><td>(ofs)</td><td>&nbsp;</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td><td>&nbsp;</td></tr>
+</table>
+<h2><a name="stack"></a>Stack operations</h2>
+<p>There are two things to note about the stack: a) before using <code>push</code> you have to be sure that <tt>SP</tt> points to a safe place (<code>pop</code> is normally less critical, as it does not write to the memory); b) you must be aware that the <code>call</code>&ndash;<code>ret</code> instructions also use the very same stack to preserve the return address.</p>
+<h3>PUSH</h3>
+<p>Syntax: <code>push reg16</code> (reg16: <tt>AF</tt>, <tt>BC</tt>, <tt>DE</tt>, <tt>HL</tt>, <tt>IX</tt>, <tt>IY</tt>)</p>
+<p>When the instruction is executed, <tt>SP</tt> is decreased by two and the value of <tt>reg16</tt> is copied to the memory location pointed by the new value of <tt>SP</tt>. It does not affect the flags.</p>
+<h3>POP</h3>
+<p>Syntax: <code>pop reg16</code> (reg16: <tt>AF</tt>, <tt>BC</tt>, <tt>DE</tt>, <tt>HL</tt>, <tt>IX</tt>, <tt>IY</tt>)</p>
+<p>When the instruction is executed, the value of the word found at the memory location pointed by <tt>SP</tt> is copied into <tt>reg16</tt>, then <tt>SP</tt> is increased by 2. No flags are affected (except for the case of popping into <tt>AF</tt>).</p>
+<h2><a name="block"></a>Block operations</h2>
+<p>Although the following instructions are basically simple loads, they do affect the flags. <kbd>S</kbd>, <kbd>Z</kbd> and <kbd>C</kbd> are not altered, but <kbd>H</kbd> and <kbd>N</kbd> are set to zero. The <kbd>P/V</kbd> flag is interpreted as <i>overflow</i>. None of them have any operands. It is worth noting that a bunch of <code>ldi</code>&rsquo;s/<code>ldd</code>&rsquo;s is always faster than the corresponding <code>ldir</code>/<code>lddr</code>, so if you are optimising for speed, do not use the repeated load instructions.</p>
+<h3>LDI</h3>
+<p>The instruction copies a byte from <tt>(HL)</tt> to <tt>(DE)</tt> (i. e. it does an <em>ld (de),(hl)</em>), then increases both <tt>HL</tt> and <tt>DE</tt> to advance to the next byte. Besides, it decreases <tt>BC</tt>, and sets the <kbd>P/V</kbd> flag in the case of overflowing.</p>
+<h3>LDD</h3>
+<p>Almost the same as <code>ldi</code>. The only difference is that <tt>HL</tt> and <tt>DE</tt> are <i>decreased</i> on every execution.</p>
+<h3>LDIR</h3>
+<p>This is an <code>ldi</code> repeated until <tt>BC</tt> reaches zero. Naturally, the <kbd>P/V</kbd> flag holds zero after leaving the instruction, since <tt>BC</tt> does not overflow. After all, this single instruction copies <tt>BC</tt> bytes from <tt>(HL)</tt> to <tt>(DE)</tt>, increases both <tt>HL</tt> and <tt>DE</tt> by <tt>BC</tt>, and sets <tt>BC</tt> to zero.</p>
+<h3>LDDR</h3>
+<p>Similarly to the previous one, but with <code>ldd</code> repeated (copying backwards).</p>
+<h2><a name="xchg"></a>Exchange operations</h2>
+<p>These instructions do not alter the flags. However, they are the only ones that access the shadow registers. You can use them for backing up data in a reasonably fast way, but you have to pay attention, since this action alters the contents of the registers you &ldquo;save&rdquo;, unlike the stack instructions. If you are smart enough, you can effectively extend the registers you use by taking advantage of the shadow registers. <i>When interrupts are enabled, you must not use these instructions, because shadow registers are used to back up all the 8-bit registers in the system interrupt routine!</i></p>
+<h3>EX</h3>
+<p>Syntax: <code>ex op1,op2</code>
+<p>The values of the two operands are exchanged. There is a total number of <i>five</i> combinations possible: <code>ex&nbsp;(sp),hl</code>, <code>ex&nbsp;(sp),ix</code>, <code>ex&nbsp;(sp),iy</code>, <code>ex&nbsp;de,hl</code>, <code>ex&nbsp;af,af&rsquo;</code>. The last one naturally alters the flags (exchanges them with the shadow flags). You cannot exchange the order given, e. g. there is no <em>ex&nbsp;hl,de</em>!</p>
+<h3>EXX</h3>
+<p>There are no operands. This instruction exchanges <tt>BC</tt> with <tt>BC&rsquo;</tt>, <tt>DE</tt> with <tt>DE&rsquo;</tt> and <tt>HL</tt> with <tt>HL&rsquo;</tt> <i>at the same time</i>. What&rsquo;s very important to note that it is <i>very</i> fast.</p>
+<p><a href="app1.htm">Back to the index</a></p>
+</body>
+</html>

@@ -1,0 +1,304 @@
+
+(Version 1, September 2000)
+
+
+                           TI-83 Basic Tricks & Tips
+                        (The Compleat Basic Programmer)
+
+
+         This guide is designed for TI-Basic programmers who think
+           they've mastered Basic, especially really good algorithm
+           guys (which I am not).  It's been my experience that
+           most "master programmers" can really hack out a good game,
+           but suck when it comes to optimizing their code.  "Why
+           bother?" they may think.  Because:
+
+                Often, your game will run faster.
+                Always, your game will be smaller.
+                Frequently, you will expand your knowledge of Basic.
+                Mostly, your audience will thank you, for allowing
+                  them to stuff more games onto their 27K of RAM.
+                Also, it's fun, in a geeky sort of way.
+
+         But I have yet to find a concise guide to DOs and DON'Ts
+           in TI-83 programming.  Sure, there are a couple small
+           "tutorials" floating around, but nothing all-inclusive.
+           Until this.
+         Happy programming!
+
+
+  First, the simple, space-saving stuff:
+
+        Do all the operations you can ahead of time and recall the
+          answers into your program.  For example, instead of "4^3",
+          write "64".
+
+        Never, EVER use the * sign for multiplication.
+          (Note that implied multiplication DOES NOT "bind" tighter
+          than regular multiplication/division.  1/2A is .5A, not
+          1/(2A).)
+
+        Remove closing parentheses, braces, and quotation marks.
+
+        The "STO>" character \->\ automatically closes quotes,
+          parentheses and braces behind it.
+
+        The colon ":" closes parentheses and braces but NOT quotes.
+
+        Of course, use the e^( key rather than e ^, the squared-sign
+          key rather than ^2, the superscript-3 character rather than
+          ^3, and the 10^( key rather than its constituent parts.
+
+        Note that the small-E exponentiation character only works with
+          integer powers, and that if nothing is put before the E, the
+          interpreter treats it as 1 times ten-to-the-whatever.  Thus,
+          instead of 100, write small-E 2.  Saves a byte.
+
+
+
+  Next, the simple reorganization tricks:
+
+        If you have occasion to use the IS>( and DS<( instructions,
+          go for it.  They're small and fast, but rarely put to good
+          use.
+
+        Increments and decrements with simple conditionals don't need
+          If instructions!  Instead of this:
+
+              If A=15:B+1\->\B
+
+          use this:
+
+              B+(A=15\->\B
+
+          Two bytes saved!  And the more Ifs you concatenate in one
+          expression, the more bytes you save.
+
+        For real and complex variables (NOT lists, matrices or strings),
+          there's a shortcut to setting the value to zero.  Instead of
+
+              0\->\A
+
+          use the one-byte-shorter
+
+              DelVar A
+
+          which frees up the associated memory block.  When next you use
+          the variable, the interpreter will automatically zero it.
+
+        Also, the DelVar command does not need a newline/colon following
+          the variable name!
+
+              :DelVar A
+              :DelVar B
+              :DelVar Z
+
+          is the same as
+
+              :DelVar ADelVar BDelVar Z
+
+        Existing lists and matrices get truncated when the dim(
+          instruction is stored to; new structures get created and zeroed
+          automatically.  Therefore, explicit zeroing of most structures
+          is unnecessary.
+
+        The special variable Ans can really speed up a program if used
+          properly.  Storing to Ans is done just like on the home screen;
+          quote the value directly and it's automatically stored to Ans.
+          Normal stores also store to Ans, so the getKey loop,
+
+              Repeat K:getKey\->\K:End
+
+          can be optimized as
+
+              Repeat Ans:getKey\->\K:End
+
+          This won't save space, but will shave a microsecond or two off
+          your execution time (and is more aesthetic).
+
+        When displaying long text messages (as in help screens), there is
+          no difference in size between
+
+              :Disp "HELLO
+              :Disp "WORLD
+
+          and
+
+              :Disp "HELLO","WORLD
+
+          This is a purely stylistic choice, and should be done as
+          readably as possible.
+
+        However, there is a way to save space on multi-screen paused
+          messages; change something like this:
+
+              :Disp "HELLO
+              :Disp "WORLD
+              :Pause
+
+          to this:
+
+              :Disp "HELLO
+              :Pause "WORLD
+
+          Two bytes saved again!
+
+
+
+  Finally, the heavy stuff:
+
+        Plan your program to use as few Goto instructions as possible
+          (outside of menus, where they're incredibly helpful).  Repeats,
+          Fors, and Whiles should take care of most Goto-suggestive
+          situations.  (Gotos search the program from top to bottom, so
+          they're really slow.)
+
+        Avoid having to put the fourth argument on the For( instruction.
+          For example, change this:
+
+              For(L,8,0,\-\1
+              Disp L
+
+          to save one byte like this:
+
+              For(L,0,8
+              Disp 8-L
+
+        Internal subroutines can often save space and streamline code.
+          To make a subroutine, do something like this:
+
+              PROGRAM: SUBDEMO
+              :If Ans=42:Goto 1
+              :Lbl 0
+              :DelVar B
+              :42:prgmSUBDEMO
+              :Disp B
+              :Stop
+              :Lbl 1
+              :B+1\->\B
+              :Return
+
+          This program calls itself to do its dirty work (namely, adding
+          one to B).  Also note the use of the Ans variable.
+
+        As a side note to the above, it is generally good practice never
+          to use Stop instructions.  If you can manipulate the program so
+          a normal termination is a "fall off the end", good for you; you
+          saved two bytes.  If not, use a Return instruction, as it helps
+          if you later want to execute the program from a shell.
+
+        In certain cases, a two-by-n matrix can be replaced with a list of
+          complex numbers, where the real part represents column 1 and the
+          imaginary part column 2.  This technique may save space, or
+          maybe not, but DOES let you create and delete your own data
+          files, rather than overwriting matrix [A] (or [B], et cetera).
+
+        Both the Horizontal and Vertical instructions are very good ways
+          of clearing large spaces of the graph screen (good for wipes);
+          the Text( instruction, with lots of spaces, can clear areas for
+          sprites very rapidly (but of course the spaces take up a few
+          dozen bytes of program space).
+
+        Finally, remember that the TI-83 is designed to make math easy;
+          if an algorithm takes up more than 30-some bytes, start looking
+          for a function in the catalog to do it for you (a lot faster).
+          For example, we could optimize
+
+              :If X=0:Then
+              :If Y>0:Then:90\->\Q
+              :Else:270\->\Q:End
+              :End
+              :Else:tan\-1\(Y/X)\->\Q
+              :If Y<0:Q+180\->\Q
+              :End
+
+          using our tricks, to the (much) shorter
+
+              :If X:Then
+              :tan\-1\(Y/X)+180(Y<0\->\Q
+              :Else
+              :90+180(Y<0\->\Q
+
+          but the program would be dozens of times faster and much more
+          aesthetic, readable and concise with the single line
+
+              :angle(X+Y\i\\->\Q
+
+
+
+  Interesting side notes, or
+  things not mentioned in other tutorials:
+
+        IT IS IMPOSSIBLE to display either the STO> arrow or the quotation
+          mark character from inside a program, for reasons which should
+          by now be obvious.  No quine programs in TI-Basic, sorry.
+
+        The Finance menu has a function, dbd(, which can calculate the
+          number of days between two dates.  Consult the manual for more
+          information on this seemingly useless function.
+
+        Subprograms, especially external ones, are often in need of
+          temporary variables that are "safe" (that contain no data from
+          the main program).  For reasonably safe variables, try:
+
+            The italic n, on the independent-variable key.
+            delta-X and -Y, and XFactor/YFactor (and other window- and
+              zoom-menu variables).
+            Theta (I use it for loops sometimes).
+            Y (it reportedly gets overwritten by some graphing commands,
+              and so is a bad choice for data storage in general).
+            Making and then deleting a list, and using the list elements
+              to store variables.
+            Ans.
+
+        The question mark character is, apparently, utterly useless.  It
+          is not a variable (nor a C-type weird operator).  Its only use
+          is prettying up strings.
+        Ditto the space character.
+
+        The Catalog doesn't show half the elements on the TI-83.  Most of
+          the missing ones are single or double key presses, or are found
+          in the Vars menus.
+
+        An entire program can be created that uses no permanent data space
+          whatsoever!  By judicious use of a list stored in the Ans
+          variable, operations can be done in parallel while not disturbing
+          any data variables.  For example, the pi-calculating algorithm:
+
+          :DelVar S
+          :For(L,1,200
+          :S+1/(4L-3\->\S
+          :S-1/(4L-1\->\S
+          :End
+          :Disp S
+
+          can be redone without L or S as follows:
+
+          :{Ans,0
+          :Repeat Ans(1
+          :{Ans(1)-1,Ans(2)+1/(4Ans(1)-3)-1/(4Ans(1)-1
+          :End
+          :Disp Ans
+
+          Of course, to optimize, the 1/(...) would be replaced by
+          the reciprocal-x keystroke... And here we have a pi calculator
+          which not only uses no variables (and hence erases no data),
+          but inputs the number of iterations (hard-coded as 200 in the
+          original) from the user at runtime!  This same change would be
+          very difficult to do in the original without adding a third
+          variable.
+            Readability does suffer, however, and the program may be
+          slightly longer (if faster) with this particular optimization.
+
+            Also, need I say it, lower-case characters from the VARS
+          menu look cool, but take two bytes.  It's a tough trade-off,
+          and depends on your intent whether you keep them or not.
+
+            That's all the tips.  Happy programming!
+
+   ____________________________________________________________________
+   :::::::    :::       :. .  .:.       :   :     .::.    . :  .   . ::
+   :::.  arthur:o'dwyer .:::.   ::    ::     .  .:::  :.   :    ::  :::
+   :::::::::::::::::::::::::::::::::::::::::order:at:the:edge:of:chaos:
+
+

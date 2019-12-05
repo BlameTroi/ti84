@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<title>Expressing yourself through TI-83 Plus/TI-84 Plus assembly</title>
+		<link rel="stylesheet" type="text/css" href="../css/styles.css" media="all"></link>
+		<script type="text/javascript" src="../js/scripts.js"></script>
+	</head>
+	<body>
+		<div id="header"></div>
+		<h2>The Calculator</h2>
+		<div id="toc"></div>
+
+		<h3>What do I want to do?</h3>
+		<p class="response">"Argh!  What do all those lines in hello.z80 mean?  Why this way?  How does all that relate to my calculator?"</p>
+
+		<h3>Can I do what I want?</h3>
+		<p class="response">"Um.. huh?  I want to know why it's ".org userMem-2" not ".org $9D93"?  I want to know why B_CALL, not bcall?  What's ld do?  You use it too many times to be a coincidence!"</p>
+
+		<p>Ok, good questions. <span class="emoticon">:)</span></p>
+
+		<p>It's best if you know what you're working with, primarily a Z80 CPU with more chips added here and there that TI thought would make a good calculator.  The Z80 is a CPU - you give it instructions, it executes it directly.  On the calculator, there is no way to run in 'protected mode' (i.e. a master teacher-like safeguard mode).  Therefore, you'll be running programs at a very dangerous and low level, in contrast to BASIC, where the OS'll give ERR:BLAH if something's wrong.  This is a fun thing in itself, for with the right combination of instructions, you can command your calculator to do anything within its capabilities!  I don't know about you, but there's a certain pleasure with RAM clears that you can't get anywhere else. <span class="emoticon">:)</span>  But enough with all this gibbering:  the key thing to note here is the calculator's capabilities - what can it possibly do and how can you exploit it to its maximum?  That's where the fun's at!</p>
+
+		<p>TI decided to use the Z80 CPU.  Consequently, you need to know how it works.  It has its own instruction set and it can address up to 64K (<code>(4*16384) = 65536</code>) of memory space.  TI decided to split it into four 16K sections - the first 32K being ROM space and the last two being RAM space.  We won't concern ourselves with the first two in this guide, but you'll have to eventually know about them in order to recognize the capabilities of the calculator (hint: see references below).</p>
+
+		<h3>What do I have to work with?</h3>
+		<p class="response">"Let me get this straight.  Instead of 24K of RAM, there was actually 32K of RAM all along?  What?!  Did TI really gyp 6K of RAM from us?  But more importantly, what's memory got to do with assembly programs?"</p>
+
+		<p>TI didn't necessarily gyp anything.  TI allocated that 6K in order for the things that you take for granted to work (e.g. blinking cursor, running programs, archiving, returning from off state, etc).  Memory has everything to do with programs.  In order to run a program, the instructions must reside in memory - how else would a calculator know what to do?</p>
+
+		<p class="response">"So there's a program that's in memory.  I do know what a program is; I've played many games.  Now, how does the calculator know where to start?  And when it's running, how does it know where it is in a program?"</p>
+
+		<p>This is all platform dependent.  A different calculator can be designed in a different way, but the concept is the same.  A CPU has its own set of internal RAM called registers.  For the Z80, the most common are a, b, c, d, e, h, and l, but remember (!) you need to know all of them in order to program a program effectively.  The magic register that tells the processor what and where its at is called pc, short for 'program counter'.  A CPU doesn't know what it's executing - it's just executing what's being forced onto it, blindly.  Don't be the "blind leading the blind"!  In other words...</p>
+
+			<h4>Be water</h4>
+			<p>Remember how I said to be shapeless and formless?  Well, you need to be open-minded enough to adapt to the language of the processor.  In this case, you 'talk' to it in assembly, which will eventually be assembled into binary.  Yes, that cryptic thing with 1's and 0's, because it's how the processor 'communicates'.  A letter such as 'A' or an instruction such as "ld de,$F00D" is not distinguishable by the processor - it's just another interpretation of languages for us humans.  The processor stores those interpretations in an address in memory in binary format, because that's how it works.  <strong>That. is. how. it. <em>works.</em>  It. just. <em>is.</em></strong>  Once you realize that, the real issue is not really so much as being constrained to this language or style, it's "Ok, this is how it works, and how it is.  How can I use it to express myself?"  Rather important concept.</p>
+
+		<p>TI decided to split the RAM into many parts, which, I guess, is the natural thing to do.  Remember ti83plus.inc?  It's an include file which you should get to know.  Say hi to it once in a while. <span class="emoticon">:)</span>  Open it up in Notepad and you'll see a whole bunch of words which are proceeded by "EQU" and followed by a number, in either decimal, binary, or hexadecimal.  Usually, it is easier to represent computer numbers in hexadecimal rather than decimal or binary because it is the most efficient bridge between languages of the calculator and the human.  However, it depends on your situation.  If it's better to use binary, use it!  If it's better to use hex, then use it!  Use whatever works!</p>
+
+		<p>Back to the concept of include files.  TI sectioned the RAM and allocated specific addresses for specific OS's variables.  Remember curRow from hello.z80?  That specific byte of memory holds the value for the current cursor row for the large font.  Now, imagine if that information wasn't available?  What would you do?  Well the original TI-85 hackers had the right idea - figure out what it is and how it works in order to use it.  Fortunately, you don't have to do all that work for the TI-83 Plus/TI-84 Plus. <span class="emoticon">:)</span>  TI was nice enough to provide documentation for some parts of the OS (I say some because there are still many undocumented aspects of the OS and hardware, so there's still more things to explore <span class="emoticon">:D</span>).  In ti83plus.inc, there are lists of ROM calls, tokens, keypresses, flags, characters, and what-have-you.  You don't necessarily need to memorize everything  - just what works for whatever you're doing.</p>
+
+			<h4>References</h4>
+			<p>I personally don't believe in a ultimate 'guide', way, or style.  Instead, I believe in using what is useful, and taking it from wherever I can.  Note how I didn't discuss much on number bases.  In fact, I won't be talking much about the techniques that have already been discussed elsewhere.  As a result, that'll seem like this guide is 'lacking' in content, but that's okay.  That's because I feel it's a waste to "reinvent the wheel."  Maybe in the future, I might add more to encompass more things, but that's not what I intend for you to see programming as.  Instead, you should be the explorer - research, compare, and analyze - which is basically saying:  absorb what is useful, and reject what is useless.</p>
+
+			<ul>
+				<li><a href="http://www.ticalc.org/archives/files/fileinfo/268/26877.html">Learn TI-83 Plus Assembly in 28 days</a></li>
+					<ul><li>Probably the de-facto standard for learning TI-83 Plus assembly since AsmGuru (see below).  Written by Sean McLaughlin (a.k.a. sigma), it has excellent code examples that deal with various topics of programming the calculator.  Good reference!</li></ul>
+				<li><a href="http://www.ticalc.org/archives/files/fileinfo/208/20890.html">Z80 Assembly Guide</a></li>
+					<ul><li>Ditto from the above. <span class="emoticon">:)</span> Written by Patai Gergely (a.k.a. CoBB), it takes an OS-less approach and focuses on the concepts of Z80 programming (any Z80 platform, not just calculators).</li></ul>
+				<li><a href="http://www.ticalc.org/archives/files/fileinfo/69/6961.html">AsmGuru</a></li>
+					<ul><li>Written by James Matthews, it was once the best way to learn assembly on the TI-83 (non-Flash calculator), but it has fallen out of date.  You should read this not just for the sake of reading it, but for the intent of wanting new perspectives.</li></ul>
+				<li><a href="http://education.ti.com/educationportal/sites/US/productDetail/us_sdk_73_83_84.html">TI-83 Plus SDK Guide</a></li>
+					<ul><li>If you're doing anything with the OS, then this guide is a must.  Written by TI, it describes many parts of the OS for general usage, with some hardware aspects mixed in.  Unfortunately, TI just <em>had</em> to make it difficult for someone to find anything on their site anymore.  Go to the website and click on "Downloads -> Guidebooks" on the left-hand column.  You'll see sdk83pguide.pdf somewhere.</li></ul>
+				<li><a href="http://education.ti.com/educationportal/sites/US/productDetail/us_sdk_73_83_84.html">TI-83 Plus System Routines</a></li>
+					<ul><li>Also written by TI, it has a list of ROM entry points for basic usage.  If you're looking for documentation for a built-in OS call that isn't too 'controversial' <span class="emoticon">*cough* ;)</span> , then this is the list to confer to.  Use the above procedure to find it as 83psysroutines.pdf.</li></ul>
+				<li>AppGuru</li>
+					<ul><li>Not sure who wrote this exactly, but it was at one time *easily* available on TI's site before the redesign, and now I can't find it.  It has many ideas and theories that are useful for any TI-OS oriented programmer.  I'm not sure about the terms for distributing this file, so I won't include it in this package.</li></ul>
+				<li><a href="http://www.ticalc.org/archives/files/fileinfo/247/24750.html">TI Link Protocol &amp; File Format Guide</a></li>
+					<ul><li>Everything link is discussed here in some manner or another - from port values to silent linking.  Also, if you were looking for a graphical listing of the tokens available on the calculator, or what to include for a .8x* file to have a valid detectable GraphLink header, that's here too!</li></ul>
+				<li><a href="http://wikiti.denglend.net">WikiTI</a></li>
+					<ul><li>All I have to say about this is "wow."  In my opinion, this is the TI-community effort at its best, for the main idea behind a wiki is that <em>anyone</em> can add and edit <em>anything</em>, so it's an on-going process to get better!  The main purpose of this particular wiki was to document the undocumented, but you'll also find many other topics of interest here, such as Z80 assemblers for use on Linux.  A must see!</li></ul>
+				<li><a>Add your own here!</a></li>
+					<ul><li>Don't be restricted by this list!  There are many other tutorials out there other than the above, however, I found these the most relevant.  Google can usually point the way... but what am I to judge?  I keep repeating myself, but remember, it's a process:</li></ul>
+			</ul>
+
+		<p class="quote">Absorb what is useful, reject what is useless, and add what is essentially your own.</p>
+		<p><a href="concept4.html">Continue...</a></p>
+		<p><a href="toc.html">Up to Table of Contents</a></p>
+		<div id="footer"></div>
+	</body>
+</html>

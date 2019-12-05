@@ -1,0 +1,12 @@
+testing.txt - Hex Listing
+34 bytes total
+
+BB 6D EF 40 
+45 21 00 00 
+22 D7 86 21 
+A8 9D EF 0A 
+45 EF 2E 45 
+C9 48 65 6C 
+6C 6F 20 57 
+6F 72 6C 64 
+21 00 

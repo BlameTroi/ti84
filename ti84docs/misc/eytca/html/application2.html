@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<title>Expressing yourself through TI-83 Plus/TI-84 Plus assembly</title>
+		<link rel="stylesheet" type="text/css" href="../css/styles.css" media="all"></link>
+		<script type="text/javascript" src="../js/scripts.js"></script>
+	</head>
+	<body>
+		<div id="header"></div>
+		<h2>Applying the Concepts - The BASIC Library Continued...</h2>
+		<div id="toc"></div>
+
+		<h3>Now can I do what I want?</h3>
+		<p>Once again, the last page was getting a bit too long for my tastes.  We're now at "Now can I do what I want?" <span class="emoticon">;)</span></p>
+		<p>I covered everything necessary to write what you wanted to write in the previous page.  It is now time to fit every piece into a complete puzzle! <span class="emoticon">:D</span></p>
+
+		<p>The "pieces of the puzzle" that we came up with are <strong>*drumroll*</strong>:</p>
+
+<pre class="code">
+	B_CALL(_RunIndicOff)</pre>
+
+		<p>and:</p>
+
+<pre class="code">
+	set textInverse,(iy+textFlags)</pre>
+
+		<p>and finally:</p>
+
+<pre class="code">
+	B_CALL(_AnsName)	;OP1 = Ans query ready to be looked-up
+	B_CALL(_RclVarSym)	;OP1 = number in Ans
+				;because Ans always exists, no error is generated
+	ld a,(hl)		;hl points to type byte in VAT - indirectly load it into register a
+	and %00011111		;mask out the unnecessary bits 5-7 (%00011111 is binary for $1F)
+	cp RealObj		;Is it a Real number?
+	ret nz			;if so, the cp sets the z flag.  nz (not zero) means it wasn't a RealObj, and we quit
+				;We now have OP1 being the number
+	B_CALL(_ConvOP1)	;Convert floating-point OP1 to a byte value in de
+				;a is Least Significant Byte, which is all we need
+	cp 0			;Did Ans equal 0 (compare register A with decimal constant 0)?
+	jp z,TurnRIOff		;z means last operation caused some register to equal zero
+	cp 1			;Ans == 1?
+	jp z,EnableRVideo
+
+TurnRIOff:
+
+EnableRVideo:</pre>
+
+		<p>Tada!  Nothing new, unsurprisingly.  What follows now is the skeleton of a typical nostub assembly program, and it should look familiar.  Note that this is what I usually use because it works for me.  If you don't like what you see, then feel free to develop your own style of coding - don't be limited by this way or that way. <span class="emoticon">:)</span></p>
+
+<pre class="code">
+.nolist
+#include "ti83plus.inc"
+.list
+
+.org userMem-2
+	.db t2ByteTok,tasmCmp
+
+	;code here
+
+.end</pre>
+
+		<p>Finally, putting everything together, we get the final product:</p>
+
+<pre class="code">
+.nolist
+#include "ti83plus.inc"
+.list
+
+.org userMem-2
+	.db t2ByteTok,tasmCmp
+
+	B_CALL(_AnsName)	;OP1 = Ans ready to be looked-up
+	B_CALL(_RclVarSym)	;OP1 = number in Ans
+				;because Ans always exists, no error is generated
+	ld a,(hl)		;hl points to type byte in VAT - indirectly load it into register a
+	and %00011111		;mask out the unnecessary bits 5-7 (%00011111 is binary for $1F)
+	cp RealObj		;Is it a Real number?
+	ret nz			;if so, the cp sets the z flag.  nz (not zero) means it wasn't a RealObj, and we quit
+				;We now have OP1 being the number
+	B_CALL(_ConvOP1)	;Convert floating-point OP1 to a byte value in de
+				;a is Least Significant Byte, which is all we need
+	cp 0			;Did Ans equal 0 (compare register A with decimal constant 0)?
+	jp z,TurnRIOff		;z means last operation caused some register to equal zero
+	cp 1			;Ans == 1?
+	jp z,EnableRVideo
+Quit:
+	ret
+
+TurnRIOff:
+	B_CALL(_RunIndicOff)
+	jr Quit
+
+EnableRVideo:
+	set textInverse,(iy+textFlags)
+	jr Quit
+.end</pre>
+
+		<p>And sure enough, if I run it, I get this:</p>
+		<img src="../images/application2_baslib.gif" height=64 width=96 alt="BASIC Library"></img>
+		<p>Nice, eh? <span class="emoticon">:)</span></p>
+
+		<h3>Is it effective?</h3>
+		<p>We are back once again to the eternal question of size versus speed (and also readability).  For one, you could go ahead and use RclAns - that would knock off one B_CALL.  Also, you could replace the "jr Quit"s with "ret" if you don't care about readability and want smaller size and faster speed.  There is also a way to optimize the cps - you could use dec a instead, but how this technique works I will leave up to you to figure out. <span class="emoticon">:)</span>
+		<h3>Notable Subtleties...</h3>
+		<p>Look at this and the previous page and observe how I applied the concepts of transforming a program idea into a functional program.  In particular, note how everything is done in "bite-sized" chunks.  See anything interesting?  It's like taking a history class and being quizzed on a chapter biweekly, culumnating up to a final exam, rather than reading the book, <em>not</em> being quizzed per chapter, and doing the final exam without prior test-question experience.  Which is more likely to work?  <em>Now</em> do you see anything interesting?  If you do, then you're one step closer to entering that elusive mindset of a hacker. <span class="emoticon">:)</span></p>
+
+		<p><a href="application3.html">Continue...</a></p>
+		<p><a href="toc.html">Up to Table of Contents</a></p>
+		<div id="footer"></div>
+	</body>
+</html>

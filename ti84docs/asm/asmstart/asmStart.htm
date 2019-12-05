@@ -1,0 +1,681 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- List of all used files, and last known locations (as of June 1, 2003):
+The Big Page of Everything:	http://education.ti.com/us/developer/83/download/download.html
+ZDS 3.68:			http://www.zilog.com/support/software/zds368.exe
+Zilog's Main Site:		http://www.zilog.com
+Old ZDS Versions:		http://www.zilog.com/support/oldzds.html
+ZDS Main Site:			http://www.zilog.com/support/sd.html
+Flash Debugger:			http://epsstore.ti.com/webs/transfer.asp?deptid=157&catid=584
+TI's Main Page:			http://education.ti.com
+Flash Debugger Main Page:	http://education.ti.com/us/developer/83/download/download.html
+TI-Connect 1.3:			ftp://ftp.ti.com/pub/graph-ti/sw-apps/ticonnect/TIConnectV1.3.0.1_ENG.exe
+Ti-Graph Link Download:		ftp://ftp.ti.com/pub/graph-ti/sw-apps/link/windows/ti83pusa.exe
+TI-Connect Main Page:		http://education.ti.com/us/product/accessory/connectivity/down/download.html
+TI-Graphlink Main Page:		http://education.ti.com/us/product/accessory/connectivity/down/link83p.html
+83+ SDK Guide:			http://education.ti.com/downloads/pdf/us/sdk83pguide.pdf
+83+ System Routines:		http://education.ti.com/downloads/pdf/us/83psysroutines.pdf
+4 ASM tutorials:		http://education.ti.com/downloads/zip/us/alltutorials.zip
+The Silver Addendum:		http://education.ti.com/downloads/pdf/us/ti83pseadn.pdf
+ConvHex:			http://education.ti.com/downloads/exe/convhex.exe
+
+--><HTML><HEAD><TITLE>Working with the Tools of Assembly</TITLE>
+<META http-equiv=Content-Type content="text/html; charset=windows-1252">
+<META content="MSHTML 6.00.2800.1170" name=GENERATOR></HEAD>
+<BODY vLink=#ff0000><!-- Intro -->
+<P align=center><FONT size=6>Getting the tools to work</FONT></P>
+<P>If you haven't realized it yet, assembly is hard.</P>
+<P>However, getting everything to work so that you can deal with the confusion 
+of assembly is even harder.</P>
+<P>Thus, this tutorial... To tell you how to get the tools of assembly to work, 
+but I won't tell you how to program in asm. Why am I doing this? Simple, I don't 
+want anyone else to have to suffer the month it took me to actually get one asm 
+program/app to work. It's a pain.</P>
+<P>Hint: If you see a <A title="Much like this" style="COLOR: #000000" 
+href="file:///C:/Programming/TI/Assembly/Help%20Files/The%20Start%20of%20Started.html#blackLink">black 
+link</A><A name=blackLink></A> on this page, try holding the mouse over it for a 
+few seconds, and you'll probably see a useful tip of some sort.
+<P>
+<P>The first step to getting the world of assembly tools to behave is to get 
+your computer ready for them... This is just a bit of housekeeping to keep your 
+hard drive cleaner than it otherwise would be... Trust me, this is worth 
+doing...</P>
+<P>In the root of the <A title="C:\ &nbsp;D:\ &nbsp;ect..." 
+style="COLOR: #000000" 
+href="file:///C:/Programming/TI/Assembly/Help%20Files/The%20Start%20of%20Started.html#drive">drive</A><A 
+name=drive></A> you want to use, make the following set of folders:</P><FONT 
+color=#0000ff>
+<UL>
+  <LI>Programming 
+  <UL>
+    <LI>TI-83+ 
+    <UL>
+      <LI>Assembly 
+      <UL>
+        <LI>Assemblers 
+        <UL>
+          <LI>ZDS 
+          <LI>Installers </LI></UL>
+        <LI>Debuggers 
+        <UL>
+          <LI>TI 
+          <LI>Installers </LI></UL>
+        <LI>Source Code 
+        <UL>
+          <LI>Default APP 
+          <LI>Default Prog </LI></UL>
+        <LI>Help Files </LI></UL>
+      <LI>Basic </LI></UL></LI></UL></LI></UL></FONT><BR>
+<P>What's the point of a directory structure that complex? It allows for a lot 
+of adjustments in the future (including more assemblers, more debuggers, and the 
+inclusion of other programming languages). It keeps things organized very well, 
+and that's the first key to success in programming.</P>
+<HR>
+<!-- Beginning of the Downloads Section -->
+<P><FONT size=5>Downloads</FONT></P>
+<P>Looking over the directories should give you some idea of what's in sore for 
+your little computer, and what you need to use for assembly... You need 
+primarily three <A 
+title="An assembler, a debugger, and something to send everything to the calc." 
+style="COLOR: #000000" 
+href="file:///C:/Programming/TI/Assembly/Help%20Files/The%20Start%20of%20Started.html#things">programs</A><A 
+name=things></A>.</P>
+<P>Now, I can tell you how and where to download everything that you'll ever 
+need for asm program/app creation.</P><BR>
+<P>If you just want to ignore everything I say, and simply download everything 
+you could possibly download all at once, go <FRAMESET NAME="everything"><A 
+title="If this doesn't work, go to &quot;education.ti.com&quot; and search for &quot;83 plus SDK&quot;, and click on a link that reads something like &quot;Downloads for TI-83 Plus SDK&quot;" 
+href="http://education.ti.com/us/developer/83/download/download.html" 
+target=everything>here</A></FRAMESET>.</P>
+<P>However, for those of us who follow directions a bit better, start by 
+downloading: 
+<UL>
+  <LI>An <A title="Zilog's Assembler" 
+  href="http://www.zilog.com/support/software/zds368.exe">assembler</A>. 
+  <BR>This is Zilog's Assembler, ZDS (current version: 3.68). Total download 
+  size: ~9 megs. Download the file into the <FONT 
+  color=#0000ff>Assemblers\Installers</FONT> folder, and install it to the <FONT 
+  color=#0000ff>Assemblers\ZDS</FONT> folder. <BR>- If you go straight to the <A 
+  title="The guys who make the Calc's Processor" href="http://www.zilog.com/" 
+  target=Zilog>Zilog Home Page</A> itself, you might find the Zilog Developer's 
+  Studio files, but you'll probably find versions that don't work with what you 
+  need. If it says anything like: "Note: This version of ZDS is intended for 
+  eZ... and e.... customers only.", it is NOT what you want. Furthermore, if it 
+  says "Download requires a registration key," again, that's not what you want, 
+  because what you do with ZDS does not require registration of the program. 
+  (Check the "<A href="http://www.zilog.com/support/oldzds.html" 
+  target=Zilog>Previous ZDS Versions</A>" link) <BR><A 
+  href="http://www.zilog.com/support/sd.html" target=Zilog>ZDS Main 
+  Page</A></FRAMESET>. <BR><BR>
+  <LI>A <A title="TI's Flash Debugger" 
+  href="http://epsstore.ti.com/webs/transfer.asp?deptid=157&amp;catid=584" 
+  target=debugger>debugger</A></FRAMESET>. - This link seems to not work more 
+  than it does work. Try going to <A title="TI's Main Calc Site" 
+  href="http://education.ti.com/" 
+  target=education.ti.com>education.ti.com</A></FRAMESET> and searching for "83 
+  plus flash debugger". <BR>This is TI's official Flash Debugger. Download size: 
+  ~4.2 megs. Download this file to <FONT 
+  color=#0000ff>Debuggers\Installers</FONT> and install it to <FONT 
+  color=#0000ff>Debuggers\TI</FONT>. <BR>- It's a little bit tough to get used 
+  to at first, but by the time you get around to using it, you should be fine. 
+  <BR><A href="http://education.ti.com/us/developer/83/download/download.html" 
+  target=everything>Flash Debugger Home Page</A> <BR><BR>
+  <LI>TI's <A title="...A way to actually get the programs onto your calc." 
+  href="ftp://ftp.ti.com/pub/graph-ti/sw-apps/ticonnect/TIConnectV1.3.0.1_ENG.exe">TI 
+  Connect</A>. <BR>The program used to send your files to the calc. Download 
+  size: ~9 megs. This software is required if you have a USB cable for your 
+  calculator. However, if you have the original Graph Link cable (the one that 
+  doesn't plug into the USB port), you can still use TI's older, and much 
+  smaller (~1.2 megs) version, <A 
+  title="Use only if you do NOT have a USB cord." 
+  href="ftp://ftp.ti.com/pub/graph-ti/sw-apps/link/windows/ti83pusa.exe">TI 
+  Graph Link</A>, though TI-Connect is still recommended because of it's 
+  versatility. <BR>- It doesn't matter what folder you install TI-Connect or the 
+  Graph Link software to, the computer straightens all that out in the end... 
+  Though a point to note: after installing either the graph link, or TI-Connect, 
+  and you choose to read the readme file, the program may forget to ask you to 
+  restart the computer. You MUST do so before the program will work right. (I've 
+  uselessly uninstalled it before after determining that it didn't work, because 
+  I read the readme file... So RESTART after install!) <BR><A 
+  title="Try searching for &quot;TI Connect&quot; if this page doesn't work" 
+  href="http://education.ti.com/us/product/accessory/connectivity/down/download.html">Ti 
+  Connect Home Page</A> | <A 
+  title="Search for &quot;Graph Link 83 plus&quot; if this page doesn't work" 
+  href="http://education.ti.com/us/product/accessory/connectivity/down/link83p.html">Graph 
+  Link Home Page</A> <BR><BR>
+  <LI>A set of instructions 
+  <UL>
+    <LI><A title='Right-Click, and select "Save Target As..." to save this file' 
+    href="http://education.ti.com/downloads/pdf/us/sdk83pguide.pdf">83+ SDK 
+    Guide</A></FRAMESET> - Download size: ~1.25 megs. Save into the <FONT 
+    color=#0000ff>Help Files</FONT> folder. 
+    <LI><A title='Right-Click, and select "Save Target As..." to save this file' 
+    href="http://education.ti.com/downloads/pdf/us/83psysroutines.pdf">83+ 
+    System Routines</A> - Download size: ~1.25 megs. Save into the <FONT 
+    color=#0000ff>Help Files</FONT> folder. 
+    <LI><A title="4 TI ASM tutorials that were not written by me" 
+    href="http://education.ti.com/downloads/zip/us/alltutorials.zip">83+ ASM 
+    Tutorials</A> - Download size: 334 kb. Save into the <FONT 
+    color=#0000ff>Help Files</FONT> folder. </LI></UL></LI></UL>
+<P></P>
+<HR>
+
+<P><FONT size=5>Use</FONT></P>
+<P>Congrats! Thanks to the hours you've now spent downloading and installing 
+(though you can feel overjoyed about having the latest OS version because of 
+TI-Connect), you're now ready to learn how to actually use the programs.</P>
+<P>The first thing you want to do is to create a template to base the rest of 
+your work off of.</P><A name=step1></A>
+<OL>To create a template: 
+  <LI>Open ZDS. 
+  <LI>Go to [File]-&gt;[New Project] 
+  <LI>Check that "Family" is selected in the "Selection by" box. If it's not 
+  selected, select it. 
+  <LI>On the Master list, select Z180. 
+  <LI>In the Project Target list, Z80180 should be selected. If it is not, 
+  select it. 
+  <LI>The Emulator box will probably read "Not Available", but that doesn't 
+  matter, that's why you downloaded the flash debugger. 
+  <LI>Now, click the &nbsp;<BUTTON>...</BUTTON> at the end of "Project Name" 
+  <LI>Go to your <FONT color=#0000ff>Programming\TI\Assembly\Source Code</FONT> 
+  folder. 
+  <LI>Click the "make a new folder" button, and create a new folder called 
+  "Default APP". 
+  <LI>Go into your Default APP folder, and type in "Default APP" as the project 
+  name, and click OK. 
+  <LI>Click the OK button on the new project window. 
+  <LI>Click the OK button on the window that pops up complaining about your 
+  selected Emulator 
+  <LI>Good job! You're into your new project. Now, go to [File]-&gt;[New File], 
+  a blank file called "Untitled1" will pop open. 
+  <LI>Now, you need to fill that file with something useful. You could start by 
+  taking some of the pre-header information out of <FONT 
+  color=#0000ff>Debuggers\TI\Demo\hello.asm</FONT>, and the rest of the header 
+  out of <A 
+  title='Right-Click, and select "Save Target As..." to save this file' 
+  href="http://education.ti.com/downloads/pdf/us/ti83pseadn.pdf" target=pdfs>The 
+  Silver Addendum</A> (Pages 3-4) (or perhaps even taking the entire header out 
+  of <FONT color=#0000ff>Debuggers\TI\Demo\hello.asm</FONT> if the addendum 
+  doesn't work), or just copy the entire file out of here: 
+  <P><B>This is the most updated header <U><A 
+  title="However, this file still should be useful even if they make a new one...  Unless they come up with another calculator after the Silver Edition..." 
+  style="COLOR: #000000" 
+  href="file:///C:/Programming/TI/Assembly/Help%20Files/The%20Start%20of%20Started.html#time">AT 
+  THIS TIME</A><A name=time></A></U>.</B> If there's something made since this 
+  file, you can still use the <A 
+  title='Before it says "; This is the application header definition area required for all Apps."' 
+  style="COLOR: #000000" 
+  href="file:///C:/Programming/TI/Assembly/Help%20Files/The%20Start%20of%20Started.html#pre">pre</A><A 
+  name=pre></A> and <A title='After it says "; Execution starts here."' 
+  style="COLOR: #000000" 
+  href="file:///C:/Programming/TI/Assembly/Help%20Files/The%20Start%20of%20Started.html#post">post</A><A 
+  name=post></A> header information, just not the header itself.</P>
+  <TABLE cellPadding=10 align=center border=1>
+    <TBODY>
+    <TR>
+      <TD><PRE>; (Your Name)
+; Name: 
+; Date: 
+;  (YY)-(MM)-(DD)
+; Action: 
+
+; Include file needed to access system routines
+	include "..\..\Debuggers\TI\Inc\ti83plus.inc"
+		; Assuming the include file is at:
+		;  "(drive):\Programming\TI\Assembly\Debuggers\TI\Inc\ti83plus.inc"
+		; And assuming the source file is at:
+		;  "(drive):\Programming\TI\Assembly\Source Code\Default APP"
+
+EXT_APP equ 1   ; This definition is required of all apps
+cseg            ; This linker directive is required of all apps.
+
+; This is the application header definition area required for all Apps.
+	DB	080h,	00Fh			; Field: Program length
+	DB	000h,	000h,	000h,	000h	; Length = 0 (N/A for unsigned
+						; Apps)
+; ------------------------------------------------------------------------------
+; * * * App types * * *
+; This example uses shareware type for signing and the simulator.
+; Replace with the commented developer ID for debugging on the calculator.
+; Note the header will need to be adjusted depending on the number of bytes in
+; this type field.
+; ------------------------------------------------------------------------------
+	DB	080h,	012h			; Field: Program type (2 byte)
+	DB	001h,	004h			; Type = Shareware, TI-83 Plus
+;						-------------------------------
+;						; Use with 5 or 6 character ID
+;	DB	080h,	013h			; Field: Program type (3 byte)
+;	DB	001h,	07Fh,	004h		; Dev. ID = "17F04"
+; ------------------------------------------------------------------------------
+	DB	080h,	021h			; Field: App ID
+	DB	001h				; Id = 1
+	DB	080h,	031h			; Field: App Build
+	DB	001h				; Build = 1
+; ------------------------------------------------------------------------------
+; -- App Name is to be 8 characters in size --
+	DB	080h,	048h			; Field: App Name
+	DB	"TEMP    "			; Name = "TEMP    "
+	DB	080h,	081h			; Field: App Pages
+	DB	001h				; App Pages = 1
+	DB	080h,	090h			; No default splash screen
+; ------------------------------------------------------------------------------
+	DB	080h,	0A1h			; Field: App level
+	DB	001h				; Highest HW level = 1
+; ------------------------------------------------------------------------------
+	DB	003h,	026h,	009h,	004h	; Field: Date stamp =
+	DB	005h,	0D4h,	062h,	000h	; 2/7/2000
+	DB	002h,	00Dh,	040h		; Dummy encrypted TI date
+	DB	055h,	073h,	021h,	0E3h	; stamp signature
+	DB	03Bh,	081h,	022h,	017h
+	DB	02Dh,	0D2h,	0D3h,	018h
+	DB	093h,	063h,	078h,	0A6h
+	DB	0A2h,	006h,	05Ch,	071h
+	DB	0C0h,	031h,	0E5h,	098h
+	DB	0DEh,	06Dh,	039h,	03Ch
+	DB	0F8h,	035h,	0E0h,	0A7h
+	DB	00Fh,	092h,	0A5h,	037h
+	DB	068h,	0F3h,	040h,	019h
+	DB	06Eh,	0CAh, 	02Fh,	064h
+	DB	0E9h,	0AAh,	0CFh,	0C9h
+	DB	035h,	039h,	0C0h,	043h
+	DB	05Bh,	0D3h,	037h,	086h
+	DB	041h,	0E2h,	001h,	090h
+; ------------------------------------------------------------------------------
+	DB	080h,	07Fh			; Field: Program Image length
+	DB	000h,	000h,	000h,	000h	; Length = 0, N/A
+; ------------------------------------------------------------------------------
+; End of required Header.
+; To allow for growth of header fields during the signing process, the
+; following pad bytes are needed. Adjust as needed.
+	DB	0,	0,	0,	0	; Reserved Pad
+	DB	0,	0,	0,	0	; Reserved Pad
+	DB	0,	0,	0,	0	; Reserved Pad
+	DB	0				; Adjusted pad for level type
+; ------------------------------------------------------------------------------
+; Adjust header according to application type.
+; This example uses shareware type (2-bytes).
+; Replace with the commented pads if using a 3-byte developer ID.
+	DB	0,	0,	0,	0	; Reserved bytes with pad for
+						; 2-byte Program Type field
+;	DB	0,	0,	0		; Reserved bytes with pad for
+						; 3-byte Program Type field
+;
+; End of 128 byte application header
+; ------------------------------------------------------------------------------
+;
+; Execution starts here.
+
+StartApp:                 ;The app starts here
+;     Pneumonic	Content		Comment
+	B_CALL	ClrLCDFull	; Clear the screen
+	xor	a		; A=0
+
+	
+
+	B_CALL	GetKey		; Wait for a keypress
+	B_JUMP	JForceCmdNoChar	; Exit the application
+</PRE></TD></TR></TBODY></TABLE>
+  <P>The actual code to start the application goes in the tabbed in line between 
+  the "<TT>xor a</TT>" and "<TT>B_CALL GetKey</TT>", you may want to add a 
+  comment saying that.</P><A name=step15></A>
+  <LI>Now, you have enough of a file to be done with that part. Go to 
+  [Project]-&gt;[Settings], and from the settings window, click the Linker tab. 
+  <LI>Select "<A title="It's the fifth one down" style="COLOR: #000000" 
+  href="file:///C:/Programming/TI/Assembly/Help%20Files/The%20Start%20of%20Started.html#ranges">Ranges</A><A 
+  name=ranges></A>" in the "Category" window, and click the New button (under 
+  the text box). 
+  <LI>Type <TT>.text</TT> into the "Section Name" field 
+  <LI>Type "4000" into the "Start Address" field 
+  <LI>Type "4000" into the "End" field 
+  <LI>In the Bounds section, select "Length" 
+  <LI>Make sure "Hexadecimal" is selected in the Radix section 
+  <LI>Click OK. 
+  <LI>Click OK again. 
+  <LI>Now, go up to the row of buttons on the top, and look for the "<A 
+  title="Or, just hit Alt+F7" style="COLOR: #000000" 
+  href="file:///C:/Programming/TI/Assembly/Help%20Files/The%20Start%20of%20Started.html#rebuild">Rebuild 
+  All</A><A name=rebuild></A>" button, and click it. 
+  <LI>The program should ask you to save your file, so save it in the <FONT 
+  color=#0000ff>Default APP</FONT> folder, as <FONT color=#0000ff>Default</FONT> 
+
+  <LI>After you save, the build window should show you the following errors: 
+  <FONT color=#ff0000><B><PRE>Deleting output files for project
+Building...
+0 error(s), 0 warning(s)
+Linking...
+ZLD-E0029 Error: 'EXTIO' is neither an address space nor a control section name
+ZLD-W0001 Warning: Extra characters on command line
+ZLD-E0029 Error: 'INTIO' is neither an address space nor a control section name
+ZLD-W0001 Warning: Extra characters on command line
+
+Default APP.ld - 2 error(s), 2 warning(s)
+
+</PRE></B></FONT>
+  <LI>That's all because you forgot to include the file in your project... So, 
+  Right-Click the "Source Files" folder in the <A 
+  title="If you can't find it, hit Alt+0, or go to [View]->[Project View]" 
+  style="COLOR: #000000" 
+  href="file:///C:/Programming/TI/Assembly/Help%20Files/The%20Start%20of%20Started.html#projectView">Project 
+  View</A><A name=projectView></A> window, and select "Add File(s) to project" 
+  <LI>Select your newly saved file, and click the "Add" button. 
+  <LI>Now, try Rebuilding again. 
+  <LI>Save your project. Rebuilding the file should work, and display something 
+  like: <FONT color=#ff0000><B><PRE>Deleting output files for project
+Building...
+default.asm
+0 error(s), 0 warning(s)
+Linking...
+
+Default APP.ld - 0 error(s), 0 warning(s)
+
+</PRE></B></FONT><A name=noWork></A>
+  <UL>If it doesn't work: 
+    <LI>Check the steps over again 
+    <LI>Make sure it's opening the include file - (If not, type in the full path 
+    name where it's located, from C:\ to the file name itself on the include 
+    line) 
+    <LI>Make sure you remembered to set the linker range. See <A 
+    title="The easily forgettable steps" style="COLOR: #000000" 
+    href="file:///C:/Programming/TI/Assembly/Help%20Files/The%20Start%20of%20Started.html#step15">steps 
+    15 - 24</A> 
+    <LI>Be sure that the include file you're using is actually <A 
+    title="Located in Deubggers\TI\Inc" style="COLOR: #000000" 
+    href="file:///C:/Programming/TI/Assembly/Help%20Files/The%20Start%20of%20Started.html#83pinc">ti83plus.inc</A><A 
+    name=83pinc></A> (not ti73.inc) 
+    <LI>Make sure that you actually included the file into your project 
+    <LI>Make sure that all the instructions, except for "EXT_APP equ 1", "cseg", 
+    and "StartApp" are tabbed in at least once 
+    <LI>Make sure that you selected Z180 as the Master, and Z80180 as the 
+    project target, and that "Family" was the "Selection by" choice. 
+    <LI>Make sure you have a Z180 compatible version of <A 
+    title="The one that DOESN'T say &quot;For owners of an X processor&quot;" 
+    href="http://www.zilog.com/support/software/zds368.exe">ZDS</A> 
+    <LI>Beyond that, I'm kind of out of guesses... Ask a computer genius, or <A 
+    title="It must be a REALLY obscure error!" 
+    href="mailto:ti-cares@ti.com?Subject=83+ ASM/SDK Help">mail TI</A>. 
+  </LI></UL></LI></OL>
+<HR>
+
+<P><FONT size=4>ASM Program</FONT></P>
+<OL>To create an assembly program (not an app), follow steps <A 
+  style="COLOR: #000000" 
+  href="file:///C:/Programming/TI/Assembly/Help%20Files/The%20Start%20of%20Started.html#step1">1 
+  - 13</A> on app creation (replacing "Default APP" with "Default Prog" where 
+  necessary). 
+  <LI>Now, since the program's different, you'll need a different source file... 
+  TI doesn't offer any good templates, so the only one I can give you is my own: 
+  <BR><BR>
+  <TABLE cellPadding=10 align=center border=1>
+    <TBODY>
+    <TR>
+      <TD><PRE>; (Your Name)
+; Name: 
+; Date: 
+;  (YY)-(MM)-(DD)
+; Action: 
+
+.NOLIST
+	include "..\..\Debuggers\TI\Inc\ti83plus.inc"
+
+
+.LIST
+;     PNEUMONIC	CONTENT	COMMENT
+	B_CALL	ClrLCDFull	; Clear the screen
+	xor	a		; A=0
+
+	
+
+	B_CALL	GetKey		; Wait for a keypress
+	ret			; quit
+end
+END
+</PRE></TD></TR></TBODY></TABLE><BR>
+  <LI>Now, you're ready to save (programs are so open ended, you don't even need 
+  to set the linker settings...) the file as <FONT color=#0000ff>Default</FONT> 
+  in your <FONT color=#0000ff>Source Code\Default Prog</FONT> folder. 
+  <LI>Hit Alt+F7 to rebuild it, and... it should work. 
+  <P>If it doesn't work... See the <A style="COLOR: #000000" 
+  href="file:///C:/Programming/TI/Assembly/Help%20Files/The%20Start%20of%20Started.html#noWork">possible 
+  fixes</A> listed in the app section...</P></LI></OL>
+<P><FONT size=+1>Save your project and close ZDS</FONT>, and you've just 
+completed the templates for both apps and progs. <A 
+title="And you did it in less than the month it took me!  ...I had to figure it all out from scratch." 
+style="COLOR: #000000" 
+href="file:///C:/Programming/TI/Assembly/Help%20Files/The%20Start%20of%20Started.html#gj">Good 
+Job!</A><A name=gj></A></P>
+<P>To prevent destruction/corruption of the two template projects you've just 
+created, you may want to make backup copies of the source files or write protect 
+them. If you write protect files however, ZDS will not let you edit them... It 
+won't even let you type when they're open, however, you can still copy out the 
+contents to a new file.</P>
+<HR>
+
+<P><FONT size=5>Prepping for the Calc</FONT></P>
+<P>The next step (the next to last step) in getting your apps and progs ready 
+for the calculator involves running the Apps through Wappsign, and running the 
+progs through convhex. (Generally, you'd debug them with TI's Flash debugger 
+before proceeding to this step, but with the completely empty program and app 
+you've written so far, you can't do much harm to your calc. - TI's tutorial, 
+starting on page 129 of the SDK guide, works well, so I won't say anything...) 
+I'll start with the apps.</P>
+<OL><FONT size=+1>App's Final Step</FONT> 
+  <LI>Open <FONT color=#0000ff>Wappsign.exe</FONT>, located in the <FONT 
+  color=#0000ff>Debuggers\TI\Utils</FONT> folder. 
+  <LI>Turn on the "Auto detect key file", "Sign on drop", and "Save settings on 
+  exit" options, turning OFF the "Only run Fillapp" option. 
+  <LI>Hit the "Detect key File Now" button. If the output window displays 
+  something like: "WAPP1005: Key file cannot be successfully detected", click 
+  the triple dot button after the blank Key file field, and select the <FONT 
+  color=#0000ff>Debugger\TI\Utils</FONT> directory, and select the key file 
+  there: <FONT color=#0000ff><TT>0104.key</TT></FONT>. 
+  <LI>Click OK. 
+  <LI>When asked to add the directory to your search path, select Yes. 
+  <LI>Now, you have two choices. Either open a window in Windows Explorer and 
+  drag and drop the file into the Applications field, or hit the triple dot 
+  button after the applications field and look for your hex file that way. 
+  <LI>Once you've selected your key file and app, if you used the "..." button 
+  to find your app, click the sign button, and you're done. If you just dragged 
+  and dropped your file, you're already done, it signs the file as soon as you 
+  drop it into the Application field. </LI></OL>
+<OL><FONT size=+1>Prog's Final Step</FONT> 
+  <P>Unfortunately, the final step for programs is a lot longer than the one for 
+  apps... You have to run your hex file through a program called ConvHex. </P>
+  <LI>Start by downloading <A title="Converts hex files to 8xp's" 
+  href="http://education.ti.com/downloads/exe/convhex.exe">ConvHEX</A>, and 
+  placing it in the <FONT color=#0000ff>Source Code</FONT> directory. 
+  <LI>Now, you need two more files (well, you don't NEED them, they just make 
+  things a lot easier), this time, of your own creation. The first is a program 
+  to make convhexing easier, and the second makes selecting the file simpler. - 
+  If you don't want to store each project in it's own folder, then you can 
+  ignore these files and just run convhex.exe with your hex file from the 
+  command prompt (assuming they're in the same folder). 
+  <P>The first file will be <FONT color=#0000ff>convhex.bat</FONT>, placed in 
+  the <FONT color=#0000ff>Source Code</FONT> directory.</P>
+  <P>To save these files the way you need to, open Notepad, copy the contents 
+  in, and click the Save button. Put quotes around the name while you're saving 
+  it, and include the extension of the file name. (ie, type "convhex.bat" - WITH 
+  quotes into the text box) Under the name field, change the save type from 
+  "Text Documents (*.txt)" to "All files", and click save.</P>
+  <TABLE cellPadding=5 align=center border=1>
+    <TBODY>
+    <TR>
+      <TD align=middle>The file contents</TD>
+      <TD align=middle>The explanation</TD></TR>
+    <TR>
+      <TD vAlign=top><PRE>@echo off
+copy %1\%1.hex %1.hex
+IF NOT EXIST %1.hex GOTO NOPRE
+convhex.exe %1.hex
+If NOT EXIST %1.8xp GOTO NOPOST
+del %1.hex
+exit
+:NOPRE
+echo Can't copy the file!
+echo  (check the directory/file names)
+pause
+exit
+:NOPOST
+echo Convhex can't fix the file!
+echo  (??????)
+pause
+exit
+</PRE></TD>
+      <TD vAlign=top><PRE>don't display system messages
+copies the file to where convhex can deal with it
+If the program can't copy the file, it's an error
+convhexes the file
+If convhex can't convhex the file, it's an error
+deletes the used hex file (but keeps the original)
+quit if there weren't problems
+
+An error and it's description
+
+
+
+
+Another error and it's description
+</PRE></TD></TR></TBODY></TABLE><BR>
+  <LI>And now, your second file: <FONT color=#0000ff>convhex.vbs</FONT>, stored 
+  in the same directory. <BR><BR>
+  <TABLE cellPadding=5 align=center border=1>
+    <TBODY>
+    <TR>
+      <TD><PRE>Dim ProgShell
+Dim input
+
+Set ProgShell = CreateObject("WScript.Shell")
+input = InputBox("ConvHEX Program:","TIASM",def)
+
+if input &lt;&gt; "" then
+	ProgShell.run "Convhex.bat "+input
+end if
+</PRE></TD>
+      <TD><PRE>Create variables (window)
+(string)
+
+Assign the variables their values
+  :
+
+If they typed something into the box:
+Run convhex.bat
+quit
+</PRE></TD></TR></TBODY></TABLE><BR>
+  <LI>Make sure all three files are in the <FONT color=#0000ff>Source 
+  Code</FONT> directory. Once they are, you can use them... Assuming you've <A 
+  title="Hit Alt+F7" style="COLOR: #000000" 
+  href="file:///C:/Programming/TI/Assembly/Help%20Files/The%20Start%20of%20Started.html#buildit">built 
+  your program</A><A name=buildit></A> with ZDS 
+  <LI>To use the files, just open <FONT color=#0000ff>convhex.vbs</FONT> and 
+  type in the file name that you want to convert... One warning though, use 
+  short project names (8 letters or less - the calc uses 8 letters, you can 
+  too), and don't use spaces, because convHex is restricted to DOS type file 
+  names. (So you'll have to make a new project to test the files) </LI></OL>
+<P>Well, you're done! Now, all that's left is to send the files to your 
+calculator, and you're finished.</P>
+<HR>
+
+<P><FONT size=5>Publishing Your Masterpieces</FONT></P>
+<OL>For users of <FONT size=+1>TI-Connect</FONT>, the solution is oddly 
+  simple: 
+  <LI>Open TI-Connect from the Start Menu. 
+  <LI>Make sure your calculator is on at the Home screen (what you normally get 
+  when you turn it on), plugged into your link cable, and that the link cable is 
+  plugged into the computer. 
+  <LI>Click the purple options button in the lower right corner of the 
+  TI-Connect main screen. 
+  <LI>Click the Communications Settings button on the bottom of the menu that 
+  pops up, and click the "Find" button on the communication settings menu. 
+  <LI>When it's found the calculator, click OK on both menus, and quit 
+  TI-Connect. 
+  <P><FONT color=#ff0000>If it can't find your communication settings, make sure 
+  both the calc and link cable are plugged in to each other and the computer, 
+  respectively. Beyond that, check the TI-Connect documentation.</FONT></P>
+  <LI>Now, go to your wonderful App/Program and right click it. On the menu that 
+  pops up, select "Send To", and go to the "Connected TI Device" folder. 
+  <LI>Send it to your RAM if it's a program, and your Archive if it's an App. 
+  </LI></OL>
+<P>If when sending your app to your calculator, you receive an error message 
+reading something like: "Cannot transfer the application to the connected TI 
+device. A certificate is required for a successful transer. (8C02001D)", you've 
+forgotten something. Go back to ZDS, and <A title="The easily forgotten steps" 
+style="COLOR: #000000" 
+href="file:///C:/Programming/TI/Assembly/Help%20Files/The%20Start%20of%20Started.html#step15">steps 
+15-24</A>, and include the Linker Range. If TI-Connect gives you any other 
+errors, try setting the linker range, making sure that you selected the right 
+processor, making sure that you are sending yourself the signed app, or if none 
+of that works, try using another header file.</P>
+<P>To get the most out of your program (not app), follow the Cleaning Up Steps 
+after the TI-Graph Link instructions...</P><BR>
+<OL>The <FONT size=+1>TI-Graph Link</FONT> Instructions <B>(for programs)</B> 
+  <LI>Open TI-Graph Link. 
+  <LI>Find and open your program. 
+  <LI>Set your communication settings in the [Link] menu... First, select your 
+  cable color in the [Link]-&gt;[Cable Type] bar. 
+  <LI>Now, if you know your com port, select it and then click the "Send to RAM" 
+  button on the corner of the program's window. 
+  <LI>If it sends, wonderful! If it doesn't, try changing your com port and 
+  trying again. If you go through every com port and it still doesn't work, try 
+  restarting your computer and having absolutely no other programs (or at least, 
+  as close as you can get to no other programs) open before you try to send. 
+  </LI></OL>
+<OL>Instructions for <B>Apps</B> 
+  <LI>Open TI-Graph Link, and select your cable type. 
+  <LI>Again, if you know your com port, you're almost done... Select 
+  [Link]-&gt;[Send Flash Software]-&gt;[Applications and Certificates]. 
+  <LI>Select your app and click OK 
+  <LI>If your com port is right, and you don't have too many other programs 
+  open, the file should send. If it doesn't work, try closing some other 
+  programs, and then try changing your com settings. </LI></OL>
+<P>(Sorry, there really isn't much help I can give you about TI-Graph Link... TI 
+abandoned it for TI-Connect for a good reason... It kind of sucks.)</P>
+<HR>
+
+<P><FONT size=5>The Last Thing Possibly Possible!</FONT> <FONT 
+size=+1><B>(housekeeping for programs)</B></FONT> 
+<P>Now that you've got the wonderful program (not app - apps should ignore this 
+section) that you wrote on your calculator, you do like any sensible person, and 
+try to use it. But all of a sudden, the calc goes haywire, and gives you this 
+crazy thing called a "Syntax Error"... What? Didn't you just compile it 
+perfectly? Didn't you just send it to the calc without a hitch? Didn't it even 
+run in the debugger perfectly?</P>
+<P>Yup. But the answer is that it doesn't matter, the calc's stupid. There's one 
+last step left to get the calc to run your program nicely... 
+<OL><B>Making The Program Run Flawlessly!</B> 
+  <LI>Hit the yellow Second button, followed by the 0 button, to bring up the 
+  Catalog. 
+  <LI>Scroll through the catalog until you reach an entry labeled "AsmComp(" 
+  (the first one beyond the screen), and hit enter. 
+  <LI>"AsmComp(" pastes itself to the home screen. 
+  <LI>Without hitting any other buttons, hit the [PRGM] button to bring up the 
+  list of executable programs, and select the program you just sent to yourself. 
+
+  <LI>Now, hit the "," button, and go to [PRGM] again, and select the same 
+  program again... Except this time, change the name a bit... Maybe add a 1 on 
+  the end, or a Z at the beginning (keep it to a max of 8 letters though... just 
+  misspell it a bit). 
+  <LI>Hit enter. This compiles your assembly program (again), into a new, 
+  improved, and even smaller version, titled whatever you titled the second 
+  file. If you want proof, hit "2nd" and "+" to bring up the memory screen, hit 
+  2 to bring up the management screen, and 7 to just show the programs. Find 
+  both programs, and the new one will be smaller than the first one. 
+  <LI>Now, even though you're in the memory management screen and could easily 
+  delete the first program, because you don't need it anymore, DON'T! 
+  <LI>Instead, go to the program menu again, and hit right to edit the 
+  programs... Start editing the first program (the one you originally sent to 
+  the calculator), and clear it out... Completely! Just hit [CLEAR] + [DEL] a 
+  bunch of times, and you'll be done quite quickly... 
+  <LI>Now, you've got a completely empty program to mess with. It has a purpose. 
+  Open the catalog again, and select the choice at the bottom of the screen, 
+  "Asm(". It'll paste into the program. 
+  <LI>Now, while still in the program, hit the [PRGM] button again, and go all 
+  the way right to the "EXEC" menu. Select your new program (the one you just 
+  compiled), and hit enter, so that it pastes into the program you just cleared 
+  out... <BR>It should look like <TT>Asm(prgmWHATEVER</TT> 
+  <LI>Now quit, and use the emptied out program just like any other normal 
+  program, except for how it runs the newly compiled program without forcing the 
+  user to type in <TT>Asm(prgmWHATEVER</TT> before every run! </LI></OL>
+<HR>
+
+<P align=center><FONT size=7>Congratulations! You're FINISHED!!!!</FONT></P>
+<P><FONT size=1>Programmed completely in HTML by Nick Daly on June 1, 2003 
+<BR>Note: Any changes to websites after this date may destroy the linking power 
+of any included links.</FONT></P></BODY></HTML>

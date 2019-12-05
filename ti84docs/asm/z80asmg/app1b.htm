@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Z80 Assembly</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="Stylesheet" href="normal.css">
+</head>
+<body>
+<h1>Z80 Assembly - Instructions: Working With Data</h1>
+<p>The notation <tt>op8</tt> denotes either <tt>A</tt>, <tt>B</tt>, <tt>C</tt>, <tt>D</tt>, <tt>E</tt>, <tt>H</tt>, <tt>L</tt>, <tt>IXH</tt>, <tt>IXL</tt>, <tt>IYH</tt>, <tt>IYL</tt>, <tt>(HL)</tt>, <tt>(IX+n)</tt>, <tt>(IY+n)</tt> or a 8-bit immediate (constant).</p>
+<h2>Arithmetic operations</h2>
+<p>This section includes all the instructions that perform basic mathematical operations.</p>
+<h3>ADD</h3>
+<p>Syntax: <code>add a,op8</code> (8 bits) or <code>add reg16,reg16</code> (16 bits), where you can use the following combinations (the first operand is on the left column):</p>
+<table border="1" cellspacing="0" cellpadding="2" align="center">
+<tr><td>&nbsp;</td><td>BC</td><td>DE</td><td>HL</td><td>IX</td><td>IY</td><td>SP</td></tr>
+<tr><td>HL</td><td>X</td><td>X</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>X</td></tr>
+<tr><td>IX</td><td>X</td><td>X</td><td>&nbsp;</td><td>X</td><td>&nbsp;</td><td>X</td></tr>
+<tr><td>IY</td><td>X</td><td>X</td><td>&nbsp;</td><td>&nbsp;</td><td>X</td><td>X</td></tr>
+</table>
+<p>The value of the two operands is added together, and the result is written back to the first one. In the case of 8-bit additions the <kbd>N</kbd> flag is reset, <kbd>P/V</kbd> is interpreted as <i>overflow</i>. The rest of the flags is modified by definition. On the other hand, 16-bit additions preserve the <kbd>S</kbd>, <kbd>Z</kbd> and <kbd>P/V</kbd> flags, and <kbd>H</kbd> is undefined. For example, if the result is out of the range (8 or 16 bits depending on the first operand), the <kbd>carry</kbd> flag is set. </p>
+<h3>SUB</h3>
+<p>Syntax: <code>sub op8</code></p>
+<p>The value of the operand is subtracted from <tt>A</tt>, and the result is also written back to <tt>A</tt>. The <kbd>N</kbd> flag is set, <kbd>P/V</kbd> is interpreted as <i>overflow</i>. The rest of the flags is modified by definition. There is no 16-bit version.</p>
+<h3>ADC</h3>
+<p>Syntax: <code>adc a,op8</code> (8 bits) or <code>adc hl,reg16</code> (16 bits, reg16 can be <tt>BC</tt>, <tt>DE</tt>, <tt>HL</tt> or <tt>SP</tt>)</p>
+<p>The sum of the two operands plus the <kbd>carry</kbd> flag (0 or 1) is calculated, and the result is written back into the first operand. The <kbd>N</kbd> flag is reset, <kbd>P/V</kbd> is interpreted as <i>overflow</i>. The rest of the flags is modified by definition. In the case of 16-bit addition the <kbd>H</kbd> flag is undefined.</p>
+<h3>SBC</h3>
+<p>Syntax: <code>sbc a,op8</code> (8 bits) or <code>sbc hl,reg16</code> (16 bits, reg16 can be <tt>BC</tt>, <tt>DE</tt>, <tt>HL</tt> or <tt>SP</tt>)</p>
+<p>The sum of the second operand and the <kbd>carry</kbd> flag (0 or 1) is subtracted from the first operand, where the final result is written back as well. The <kbd>N</kbd> flag is set, <kbd>P/V</kbd> is interpreted as <i>overflow</i>. The rest of the flags is modified by definition. In the case of 16-bit subtraction the <kbd>H</kbd> flag is undefined.</p>
+<h3>INC</h3>
+<p>Syntax: <code>inc op8</code> (immediate values are of course invalid) or <code>inc reg16</code> (reg16: BC, DE, HL, IX, IY or SP)</p>
+<p>Increments the value of the operand by one. 8-bit increments preserve the <kbd>C</kbd> flag, reset <kbd>N</kbd>, treat <kbd>P/V</kbd> as <i>overflow</i> and modify the others by definition. 16-bit increments <i>do not alter any of the flags</i>.</p>
+<h3>DEC</h3>
+<p>Syntax: <code>dec op8</code> (immediate values are of course invalid) or <code>dec reg16</code> (reg16: BC, DE, HL, IX, IY or SP)</p>
+<p>Decrements the value of the operand by one. 8-bit decrements preserve the <kbd>C</kbd> flag, set <kbd>N</kbd>, treat <kbd>P/V</kbd> as <i>overflow</i> and modify the others by definition. 16-bit decrements <i>do not alter any of the flags</i>.</p>
+<h3>NEG</h3>
+<p>This instruction has no operands. When it is executed, the value in <tt>A</tt> is multiplied by -1 (two&rsquo;s complement). The <kbd>N</kbd> flag is set, <kbd>P/V</kbd> is interpreted as <i>overflow</i>. The rest of the flags is modified by definition. This instruction is completely equivalent to <code>cpl a</code> followed by <code>inc a</code> (both in execution time and in size).</p>
+<h3>DAA</h3>
+<p>Decimal Adjust Accumulator; no operands are needed. When this instruction is executed, the <tt>A</tt> register is BCD corrected using the contents of the flags. The exact process is the following: if the least significant four bits of <tt>A</tt> contain a non-BCD digit (i. e. it is greater than 9) or the <kbd>H</kbd> flag is set, then $06 is added to the register. Then the four most significant bits are checked. If this more significant digit also happens to be greater than 9 or the <kbd>C</kbd> flag is set, then $60 is added. If this second addition was needed, the <kbd>C</kbd> flag is set after execution, otherwise it is reset. The <kbd>N</kbd> flag is preserved, <kbd>P/V</kbd> is <i>parity</i> and the others are altered by definition.</p>
+<h2><a name="logic"></a>Logical operations</h2>
+<p>These are the instructions that perform bit-level manipulation.</p>
+<h3>OR</h3>
+<p>Syntax: <code>or op8</code></p>
+<p>Performs bit-wise OR between <tt>A</tt> and the operand, and writes the result back to <tt>A</tt>. The <kbd>C</kbd> and <kbd>N</kbd> flags are cleared, <kbd>P/V</kbd> is <i>parity</i>, and the others are altered by definition. An example:</p>
+<pre><code>        %00101110
+        %10011101  i. e. only two zeroes give zero, all the other combinations result in one
+        ---------
+        %10111111 (result)
+</code></pre>
+<h3>AND</h3>
+<p>Syntax: <code>and op8</code></p>
+<p>Performs bit-wise AND between <tt>A</tt> and the operand, and writes the result back to <tt>A</tt>. The <kbd>C</kbd> and <kbd>N</kbd> flags are cleared, <kbd>P/V</kbd> is <i>parity</i>, and the others are altered by definition. An example:</p>
+<pre><code>        %00101110
+        %10011101  i. e. only two ones give one, all the other combinations result in zero
+        ---------
+        %00001100 (result)
+</code></pre>
+<h3>XOR</h3>
+<p>Syntax: <code>xor op8</code></p>
+<p>Performs bit-wise XOR (exclusive or) between <tt>A</tt> and the operand, and writes the result back to <tt>A</tt>. The <kbd>C</kbd> and <kbd>N</kbd> flags are cleared, <kbd>P/V</kbd> is <i>parity</i>, and the others are altered by definition. An example:</p>
+<pre><code>        %00101110
+        %10011101  i. e. inequality gives one, while equality gives zero as a result
+        ---------
+        %10110011 (result)
+</code></pre>
+<h3>CPL</h3>
+<p>This instruction has no operands. It gives the one&rsquo;s complement of <tt>A</tt>, i. e. all the bits of <tt>A</tt> are reversed individually. It sets the <kbd>H</kbd> and <kbd>N</kbd> flags, and leaves the others intact.</p>
+<h3>SET</h3>
+<p>Syntax: <code>set n,op8</code> (n is a number between 0 and 7, <tt>op8</tt> cannot be immediate, <tt>IXH</tt>, <tt>IXL</tt>, <tt>IYH</tt> or <tt>IYL</tt>)</p>
+<p>As its name suggests, this instruction sets the n<sup>th</sup> bit of the operand given. The flags are preserved.</p>
+<h3>RES</h3>
+<p>Syntax: <code>res n,op8</code> (n is a number between 0 and 7, <tt>op8</tt> cannot be immediate, <tt>IXH</tt>, <tt>IXL</tt>, <tt>IYH</tt> or <tt>IYL</tt>)</p>
+<p>The instruction resets the n<sup>th</sup> bit of the operand given. Again, the flags are preserved.</p>
+<h3>SCF</h3>
+<p>This is the &ldquo;Set Carry Flag&rdquo; instruction, which simply alters the flags. Besides setting the <kbd>C</kbd> flag, it clears <kbd>H</kbd> and <kbd>N</kbd> as well.</p>
+<h3>CCF</h3>
+<p>&ldquo;Complement Carry Flag&rdquo;, i. e. negating the <kbd>C</kbd> flag. Besides, <kbd>N</kbd> is cleared and <kbd>H</kbd> holds an undefined value after execution.</p>
+<h2><a name="shift"></a>Shift operations</h2>
+<p>This set of instructions does binary shifting, which is equivalent to multiplications and divisions with (powers of) 2. Rotations also belong to this group.</p>
+<h3>SLA</h3>
+<p>Syntax: <code>sla op8</code> (<tt>op8</tt> cannot be immediate, <tt>IXH</tt>, <tt>IXL</tt>, <tt>IYH</tt> or <tt>IYL</tt>)</p>
+<p>The bits of the operand are shifted leftwards, bit 0 (the least significant bit) is reset. The bit leaving the operand on the left appears in the <kbd>carry</kbd>. The <kbd>H</kbd> and <kbd>N</kbd> flags are reset, <kbd>P/V</kbd> is <i>parity</i>, <kbd>S</kbd> and <kbd>Z</kbd> are modified by definition.</p>
+<h3>SRA</h3>
+<p>Syntax: <code>sra op8</code> (<tt>op8</tt> cannot be immediate, <tt>IXH</tt>, <tt>IXL</tt>, <tt>IYH</tt> or <tt>IYL</tt>)</p>
+<p>The bits of the operand are shifted rightwards, except for bit 7 (the most significant bit), whose value is left intact (the sign is preserved). The bit leaving the operand on the right appears in the <kbd>carry</kbd>. The <kbd>H</kbd> and <kbd>N</kbd> flags are reset, <kbd>P/V</kbd> is <i>parity</i>, <kbd>S</kbd> and <kbd>Z</kbd> are modified by definition.</p>
+<h3>SLL (SL1)</h3>
+<p>Syntax: <code>sll op8</code> or <code>sl1 op8</code> (<tt>op8</tt> cannot be immediate, <tt>IXH</tt>, <tt>IXL</tt>, <tt>IYH</tt> or <tt>IYL</tt>)</p>
+<p><i>This instruction is undocumented, and incompatible with the subsequent generations of the CPU (e. g. the Z380 does not support it), therefore you should avoid using it. However, it should work on every Z80 processor.</i> The bits of the operand are shifted leftwards, bit 0 is set to one. The bit leaving the operand on the left is lost. The <kbd>C</kbd>, <kbd>H</kbd> and <kbd>N</kbd> flags are reset, <kbd>P/V</kbd> is <i>parity</i>, <kbd>S</kbd> and <kbd>Z</kbd> are modified by definition.</p>
+<h3>SRL</h3>
+<p>Syntax: <code>srl op8</code> (<tt>op8</tt> cannot be immediate, <tt>IXH</tt>, <tt>IXL</tt>, <tt>IYH</tt> or <tt>IYL</tt>)</p>
+<p>The bits of the operand are shifted rightwards, bit 7 is reset. The bit leaving the operand on the right appears in the <kbd>carry</kbd>. The <kbd>H</kbd> and <kbd>N</kbd> flags are reset, <kbd>P/V</kbd> is <i>parity</i>, <kbd>S</kbd> and <kbd>Z</kbd> are modified by definition.</p>
+<h3>RL</h3>
+<p>Syntax: <code>rl op8</code> (<tt>op8</tt> cannot be immediate, <tt>IXH</tt>, <tt>IXL</tt>, <tt>IYH</tt> or <tt>IYL</tt>)</p>
+<p>9-bit rotation to the left. The bit leaving on the left is copied into the <kbd>carry</kbd>, while the old value of the <kbd>carry</kbd> appears in bit 0 of the operand. The <kbd>H</kbd> and <kbd>N</kbd> flags are reset, <kbd>P/V</kbd> is <i>parity</i>, <kbd>S</kbd> and <kbd>Z</kbd> are modified by definition.</p>
+<h3>RR</h3>
+<p>Syntax: <code>rr op8</code> (<tt>op8</tt> cannot be immediate, <tt>IXH</tt>, <tt>IXL</tt>, <tt>IYH</tt> or <tt>IYL</tt>)</p>
+<p>9-bit rotation to the right. The bit leaving on the right is copied into the <kbd>carry</kbd>, while the old value of the <kbd>carry</kbd> appears in bit 7 of the operand. The <kbd>H</kbd> and <kbd>N</kbd> flags are reset, <kbd>P/V</kbd> is <i>parity</i>, <kbd>S</kbd> and <kbd>Z</kbd> are modified by definition.</p>
+<h3>RLA</h3>
+<p>There are no operands to this instruction. It is the same as <code>rl a</code> except that it is faster and does not change the <kbd>S</kbd>, <kbd>Z</kbd> and <kbd>P/V</kbd> flags.</p>
+<h3>RRA</h3>
+<p>There are no operands to this instruction. It is the same as <code>rr a</code> except that it is faster and does not change the <kbd>S</kbd>, <kbd>Z</kbd> and <kbd>P/V</kbd> flags.</p>
+<h3>RLC</h3>
+<p>Syntax: <code>rlc op8</code> (<tt>op8</tt> cannot be immediate, <tt>IXH</tt>, <tt>IXL</tt>, <tt>IYH</tt> or <tt>IYL</tt>)</p>
+<p>8-bit rotation to the left. The bit leaving on the left is copied into the <kbd>carry</kbd>, and to bit 0 of the operand as well. The <kbd>H</kbd> and <kbd>N</kbd> flags are reset, <kbd>P/V</kbd> is <i>parity</i>, <kbd>S</kbd> and <kbd>Z</kbd> are modified by definition.</p>
+<h3>RRC</h3>
+<p>Syntax: <code>rrc op8</code> (<tt>op8</tt> cannot be immediate, <tt>IXH</tt>, <tt>IXL</tt>, <tt>IYH</tt> or <tt>IYL</tt>)</p>
+<p>8-bit rotation to the right. The bit leaving on the right is copied into the <kbd>carry</kbd>, and to bit 7 of the operand as well. The <kbd>H</kbd> and <kbd>N</kbd> flags are reset, <kbd>P/V</kbd> is <i>parity</i>, <kbd>S</kbd> and <kbd>Z</kbd> are modified by definition.</p>
+<h3>RLCA</h3>
+<p>There are no operands to this instruction. It is the same as <code>rlc a</code> except that it is faster and preserves the <kbd>S</kbd>, <kbd>Z</kbd> and <kbd>P/V</kbd> flags.</p>
+<h3>RRCA</h3>
+<p>There are no operands to this instruction. It is the same as <code>rrc a</code> except that it is faster and preserves the <kbd>S</kbd>, <kbd>Z</kbd> and <kbd>P/V</kbd> flags.</p>
+<h3>RLD</h3>
+<p>This instruction has no operands. It is a 4-bit leftward rotation of the 12-bit number whose 4 most significant bits are the 4 least significant bits of <tt>A</tt>, and its 8 least significant bits are in <tt>(HL)</tt>. I. e. if <tt>A</tt> contains <code>%aaaaxxxx</code> and <tt>(HL)</tt> is <code>%yyyyzzzz</code> initially, their final values will be <tt>A</tt>=<code>%aaaayyyy</code> and <tt>(HL)</tt>=<code>%zzzzxxxx</code>. The <kbd>H</kbd> and <kbd>N</kbd> flags are reset, <kbd>P/V</kbd> is <i>parity</i>, <kbd>S</kbd> and <kbd>Z</kbd> are modified by definition. The <kbd>carry</kbd> flag is preserved.</p>
+<h3>RRD</h3>
+<p>This instruction has no operands. It is a 4-bit rightward rotation of the 12-bit number whose 4 most significant bits are the 4 least significant bits of <tt>A</tt>, and its 8 least significant bits are in <tt>(HL)</tt>. I. e. if <tt>A</tt> contains <code>%aaaaxxxx</code> and <tt>(HL)</tt> is <code>%yyyyzzzz</code> initially, their final values will be <tt>A</tt>=<code>%aaaazzzz</code> and <tt>(HL)</tt>=<code>%xxxxyyyy</code>. The <kbd>H</kbd> and <kbd>N</kbd> flags are reset, <kbd>P/V</kbd> is <i>parity</i>, <kbd>S</kbd> and <kbd>Z</kbd> are modified by definition. The <kbd>carry</kbd> flag is preserved.</p>
+<h2><a name="test"></a>Test operations</h2>
+<p>The following instructions are used to verify data and store the results in the flags.</p>
+<h3>CP</h3>
+<p>Syntax: <code>cp op8</code></p>
+<p>This is a virtual subtraction from <tt>A</tt>, without writing back the result. You can regard it as a <code>sub op8</code> that affects only the flags. The most important examples: if <tt>A</tt>&nbsp;=&nbsp;<tt>op8</tt> then the <kbd>C</kbd> flag is reset, and <kbd>Z</kbd> is set. If <tt>A</tt>&nbsp;&lt;&nbsp;<tt>op8</tt>, <kbd>C</kbd> is set and <kbd>Z</kbd> is reset. If <tt>A</tt>&nbsp;&gt;&nbsp;<tt>op8</tt> then both <kbd>C</kbd> and <kbd>Z</kbd> are reset.</p>
+<h3>BIT</h3>
+<p>Syntax: <code>bit n,op8</code> (<tt>op8</tt> cannot be immediate, <tt>IXH</tt>, <tt>IXL</tt>, <tt>IYH</tt> or <tt>IYL</tt>)</p>
+<p>The <i>opposite</i> of the n<sup>th</sup> bit of the second operand is written into the <kbd>Z</kbd> flag. The <kbd>carry</kbd> is left intact, <kbd>N</kbd> is reset, <kbd>H</kbd> is set, while <kbd>S</kbd> and <kbd>P/V</kbd> are undefined.</p>
+<h3>CPI</h3>
+<p>There are no operands. This is a <code>cp (hl); inc hl; dec bc</code> combined in one instruction. The <kbd>carry</kbd> is <i>preserved</i>, <kbd>N</kbd> is set and all the other flags are affected as defined. <kbd>P/V</kbd> denotes the <i>overflowing</i> of <tt>BC</tt>, while the <kbd>Z</kbd> flag is set if <tt>A</tt>=<tt>(HL)</tt> at the time of the comparison.</p>
+<h3>CPD</h3>
+<p>The same as <code>cpi</code> but with <tt>HL</tt> being <i>decremented</i>.</p>
+<h3>CPIR</h3>
+<p>Simply <code>cpi</code> repeated until either <tt>BC</tt> becomes zero or <tt>A</tt> is equal to <tt>(HL)</tt>.</p>
+<h3>CPDR</h3>
+<p>The only difference from <code>cpir</code> is that <tt>HL</tt> is decremented during each iteration.</p>
+<p><a href="app1.htm">Back to the index</a></p>
+</body>
+</html>

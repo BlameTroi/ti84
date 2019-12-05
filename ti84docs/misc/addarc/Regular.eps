@@ -1,0 +1,127 @@
+%!PS-Adobe-2.0 EPSF-2.0
+%%BoundingBox: 20.0 20.0 172.0 122.0
+%%Creator: Wlink83P.EXE
+%%Title: REGULAR.EPS 
+%%CreationDate: 08/30/01 15:11
+%%EndComments
+
+% EPS file to print LCD of TI-83 Plus Graphics Calculator
+
+save
+
+   % Define constants ------------------------------------------------
+
+   % Width & height of printed LCD. Scale these as necessary.
+   /wid  150 def             % Actual screen width  = 150 (52.8  mm)
+   /ht   100 def             % Actual screen height = 100 (35.15 mm)
+
+   /picstr 1 string def      % Blank string used by ScreenImage procedure.
+
+   % Define procedures -----------------------------------------------
+   /inch {72 mul} def
+
+   % Set position for lower-left corner of printout
+   /setposn { 21 21 translate} def
+
+   % Draw a border around the image.
+   /drawborder
+       { gsave
+            setposn
+            [1 0 0 1 -0.5  0.5] concat
+            newpath
+               0          0               moveto
+               0          ht              rlineto
+               wid        0               rlineto
+               0          ht 0 exch sub   rlineto
+               closepath
+               0.48 setlinewidth   % 2/300 inch
+            stroke
+         grestore
+       } def
+
+   /concatprocs
+      { /proc2 exch cvlit def
+        /proc1 exch cvlit def
+   
+        /newproc proc1 length proc2 length add
+         array def
+        newproc 0 proc1 putinterval
+        newproc proc1 length proc2 putinterval
+        newproc cvx
+      } def
+
+   /ScreenImage 		     % Image is  96 pixels per row, 64 rows.
+      {  96 64 1 [ 96 0 0 -64 0 64]
+          { currentfile picstr readhexstring pop }
+          image
+      } def
+
+   % ============================ Main Program ============================
+
+   gsave
+      setposn
+      wid ht scale
+      % Set currenttransfer to print bit map in black on white.
+      {1 exch sub} currenttransfer     % Use {dup} and {1 exch sub} as inverses.
+      concatprocs                          
+      settransfer
+
+      ScreenImage
+ f1 c8 80 fb cf be 00 00 1c 13 e7 1c 8a 2d 80 82
+ 28 20 00 00 22 30 48 a2 8a 2a 80 82 28 20 00 00
+ 02 50 88 a2 f3 ea 80 f3 cf 3c 00 00 04 90 47 1e
+ a2 28 80 82 88 20 00 00 08 f8 28 82 92 28 80 82
+ 48 20 00 00 10 12 28 84 8a 28 80 82 2f be 00 00
+ 3e 11 c7 18 00 00 00 00 00 00 00 00 00 00 00 00
+ 73 c7 00 fb cf be 00 02 0c f9 c1 1c 8a 28 80 82
+ 28 20 00 06 10 12 23 22 8a 28 00 82 28 20 00 02
+ 20 22 25 26 fb c8 00 f3 cf 3c 00 02 3c 11 c9 2a
+ 8a 88 00 82 88 20 00 02 22 0a 2f b2 8a 48 80 82
+ 48 20 00 02 22 8a 21 22 8a 27 00 82 2f be 00 07
+ 1c 71 c1 1c 00 00 00 00 00 00 00 00 00 00 00 00
+ df e7 18 60 00 00 00 00 00 00 00 00 9e 68 88 20
+ 00 00 00 00 00 00 00 00 de 68 88 20 00 00 00 00
+ 00 00 00 00 df ef 88 20 00 00 00 00 00 00 00 00
+ de 68 88 20 00 00 00 00 00 00 00 00 de 68 88 20
+ 00 00 00 00 00 00 00 00 8f e8 9c 72 a0 00 00 00
+ 00 00 00 00 ff e0 00 00 00 00 00 00 00 00 00 00
+ 70 0f 00 01 80 00 00 00 00 00 00 00 89 88 80 00
+ 80 00 00 00 00 00 00 00 09 88 9c 70 80 00 00 00
+ 00 00 00 00 10 0f 22 08 80 00 00 00 00 00 00 00
+ 21 8a 3e 78 80 00 00 00 00 00 00 00 41 89 20 88
+ 80 00 00 00 00 00 00 00 f8 08 9c 79 ca 80 00 00
+ 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ f8 07 00 00 06 00 00 00 00 00 00 00 11 88 80 00
+ 02 00 00 00 00 00 00 00 21 88 1c d3 c2 1c 88 00
+ 00 00 00 00 10 08 22 aa 22 22 50 00 00 00 00 00
+ 09 88 22 ab c2 3e 20 00 00 00 00 00 89 88 a2 8a
+ 02 20 50 00 00 00 00 00 70 07 1c 8a 07 1c 8a a0
+ 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ 10 08 08 01 00 00 00 00 00 00 00 00 31 88 00 01
+ 00 00 00 00 00 00 00 00 51 88 18 73 80 00 00 00
+ 00 00 00 00 90 08 08 81 00 00 00 00 00 00 00 00
+ f9 88 08 71 00 00 00 00 00 00 00 00 11 88 08 09
+ 20 00 00 00 00 00 00 00 10 0f 9c f0 ca 80 00 00
+ 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ f8 08 80 40 02 00 00 00 00 00 00 00 81 8d 80 40
+ 00 00 00 00 00 00 00 00 f1 8a 9c e2 c6 22 00 00
+ 00 00 00 00 08 0a 82 43 22 14 00 00 00 00 00 00
+ 09 88 9e 42 02 08 00 00 00 00 00 00 89 88 a2 4a
+ 02 14 00 00 00 00 00 00 70 08 9e 32 07 22 a8 00
+ 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ 30 88 80 88 00 00 00 00 00 00 00 00 40 88 80 88
+ 00 00 00 00 00 00 00 00 80 88 80 89 cb 1c 00 00
+ 00 00 00 00 f0 85 3e 88 2c a0 00 00 00 00 00 00
+ 8a a2 00 51 e8 1c 00 00 00 00 00 00 89 c2 00 52
+ 28 02 00 00 00 00 00 00 70 82 00 21 e8 3c a8 00
+ 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+   grestore
+   drawborder
+
+restore
+
+   %  NOTE:  If you are attempting to send this file directly to a
+   %	     POSTSCRIPT printer, remove the PERCENT SIGN preceeding
+   %	     the following SHOWPAGE directive.
+% showpage

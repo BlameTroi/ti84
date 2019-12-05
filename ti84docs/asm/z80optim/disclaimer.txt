@@ -1,0 +1,40 @@
+==========================================================
+ DISCLAIMER
+==========================================================
+
+Before using any of my programs, I ask that you carefully
+read the following disclaimer. In using my program, it is
+assumed that you have completely read, understood, and
+agreed to the disclaimer.
+
+
+		You may by all rights freely distripute
+	this program. You may NOT attempt to sell this
+	program, in whole or part.
+		You may by all rights freely use this
+	program.
+		In the case that you are caught using
+	this program illicitly in the classroom, I
+	cannot be held liable for your wrongdoing.
+	You are solely responsible for the usage of
+	this program.
+		In the case that your calculator explodes
+	while you are using this program, I cannot
+	be held liable for any harm the program may
+	inflict on you or anyone else. This program
+	is not a device itself, and therefore does not
+	comply with the FCC regulations.
+		In the case that this program produces a
+	incorrectly calculated solution or answer, I
+	cannot be held liable. The validity of this
+	program is gauranteed, unless your calculator
+	and/or calculator settings is the cause of the
+	incorrect calculation(s).
+		In the case that this program produces one
+	or more errors, I cannot be held responsible.
+		In the case that this program causes damage
+	to your calculator hardware and/or software, I
+	cannot be held liable.
+
+
+With that said, enjoy!

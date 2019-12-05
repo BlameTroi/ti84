@@ -1,0 +1,70 @@
+TI-85 Assembly Glossary
+
+Address: A number given to a location in memory. The location is accessed by using that number, like accessing a variable by using its name. On the TI-85, each address is two bytes long, and each address refers to a one-byte memory location.
+
+
+Assembler: assembly language or  a program that converts source code that the programmer wrote into machine language that the processor can understand. Similar to compilers used with high-level languages.
+
+
+Assembly language: A low-level language used to program microprocessors directly. Z80   assembly language can be used on the TI-85 to write programs that execute faster than programs written in TI-BASIC.
+
+
+Character: A single letter, digit, or symbol. 'Q' is a character. '4' is a character. '%' is a character. '123' and 'yo' are not characters.
+
+
+Execute: Run a program or carry out a command.
+
+
+High-level language: Any programming language that tries to look like plain English so it is easier for humans to understand. Unfortunately, it cannot be understood by a computer unless it is compiled into machine language. See also low-level language.
+
+
+Immediate: An immediate value is one that is given in the program code, instead of being loaded from somewhere else. For example, in LD A, 17, 17 is an immediate value. In LD A, B, the value in B is not immediate, because is is not written into the code.
+
+
+Instruction: A command that tells the processor to do something, like add two numbers or get some data from the memory.
+
+   
+Low-level language: Any programming language that doesn't look like English but is still able to be understood by people. It uses "words" like "ADD" to replace machine language instuctions like "110100" to make it easier for the human. See also high-level language.
+
+
+Machine language: Any programming language that consists of of 1's and 0's representing instructions. A typical machine instruction could be 110100, meaning "add two numbers together." It is the only language understood by the processor and is completely incomprehensible to most people.
+
+
+Memory: Memory is where data is stored. On the TI-85, the main memory is the built-in 32K of RAM. This memory is composed of one-byte sections, each with a unique address. See also the Data and Memory lesson.
+
+ 
+Microprocessor: See processor.
+
+
+Processor: A large computer chip that does most of the work in a computer or calculator. The processor in the TI-85 is the Zilog Z80 chip.
+
+  
+Program: A thing that tells the calculator to do stuff. More specifically, a program is a list of instructions for the processor to execute.
+
+
+Register: A register is a piece of high-speed memory located directly on the processor. It is used to store data while the processor mainpulates it. On the TI-85, there are 14 registers. See also the Data and Registers lesson.  
+
+
+Register pair: Two registers being used as if they were one. In this way, larger numbers can be used than in single registers. The register pairs are AF, BC, DE, and HL. Register pairs are often used to hold addresses.
+
+
+Source code: A text file containing the code that the programmer wrote, usually in a high-level or low-level programming language.
+
+
+TASM: Table Assembler. It is a DOS program which assembles source code for the Z80 and other processors. The assembled code can be moved to the TI-85 and run using ZShell.
+
+
+TI-85: The calculator (duh!)
+
+
+TI-BASIC: The programming language commonly used on the TI-85. It is the language that is used for PROGRAM variables. Its main drawback is that these programs run very slowly, because they have to be translated into assembly language while the program is running, eating up valuable processor time.
+
+
+Z80: The Zilog Z80 processor is the one used in the TI-85. Z80 assembler is the language used to program the Z80 chip.
+
+
+ZShell: A program for the TI-85 which allows you to run assembly language programs stored in string variables.   
+
+
+
+

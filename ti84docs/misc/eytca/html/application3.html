@@ -1,0 +1,467 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<title>Expressing yourself through TI-83 Plus/TI-84 Plus assembly</title>
+		<link rel="stylesheet" type="text/css" href="../css/styles.css" media="all"></link>
+		<script type="text/javascript" src="../js/scripts.js"></script>
+	</head>
+	<body>
+		<div id="header"></div>
+		<h2>Applying the Concepts - From Pseudocode to Program</h2>
+		<div id="toc"></div>
+
+		<p>A common technique for assembly programming is to devise some sort of pseudocode for whatever you're trying to accomplish.  Pseudocode doesn't really have to be a language - it can be as simple as a group of coherent english words.  However, some people find it easier to organize the harder routines (like the various sorting algorithms) in a higher language, such as C/C++.  I myself use BASIC as a form of pseudocode from time to time. <span class="emoticon">:o</span>  Basically, pseudocode attempts to outline your thoughts on the program into a purposeful and easy-to-understand piece of code.</p>
+		<p>For this application, let's say you were a BASIC programmer and you have some code:</p>
+
+<pre class="code">
+For(A,1,8:For(B,1,12:[A](A,B):End:End</pre>
+
+		<p>Other than being a waste of space without much practical use, the above code simply transverses through the 8x12 matrix [A] and gets the value to be stored in Ans.  Yes, as I said, it is a do-nothing piece of code, but that's not the point of this exercise.  The point is, how can we translate this <em>pseudocode</em> into assembly code?  Before we continue, it is important to note that there is more than one way to do this:  I'm just presenting what I think is logical to a beginner in assembly, not what may be the most uber-optimized form.  With that said, let's break the pseudocode into the core component parts - <em>primarily two nested For( loops and a matrix being addressed</em>.  See them?  Ok, let's think on this, since that's what you're going to need to do also when you make your own programs.</p>
+
+		<h3>Analyzing and Translating the Pseudocode</h3>
+		<p>As we already determined, there are two For loops and one matrix.  Let's now take everything step-by-step and discuss For loops, since there are two of them and they are on the outside of the matrix code, meaning it will most likely come first in the source code.</p>
+
+		<h4>A For Loop</h4>
+		<p>The parameters of a For loop in TI-BASIC consists of Var,Start,End,[Step], with [Step] being optional.  That's pretty obvious if you've programmed some BASIC before.  However, we could not write such a For loop in that format <code>For(B,1,12,1)</code> in assembly because that's a high-level way of thinking.  We need to enter the thought-processes of the low-level CPU and think how a microprocessor thinks.  The <code>B,1,12,1</code> in the For are variable parameters, but assembly doesn't have that exactly; it has registers and memory.  So how then do you translate your pseudocode into Z80 with these registers?</p>
+
+		<p>By breaking the pseudocode into pieces, you have some For loops.  <span class="response">"Is there a way to emulate a For loop in assembly?"</span>  As it is, there is one such instruction, djnz (<strong>d</strong>ecrement and <strong>j</strong>ump if <strong>n</strong>ot <strong>z</strong>ero), which I found in Day 7 of 83pa28d.  If you look up djnz in an instruction table (such as 83pa28d's) you'll see that this instruction will decrement register b and jump if the Zero flag was reset.  In other words, this code:</p>
+
+<pre class="code">
+someLabel:
+	;code here
+	djnz someLabel</pre>
+
+		<p>is the same as the following:</p>
+
+<pre class="code">
+someLabel:
+	;code here
+	dec b
+	jr nz,someLabel</pre>
+
+		<p>They both mean decrement register b and if b is not zero, then (relative) jump to someLabel.  However, if you think carefully, you really don't want the loop to count down by decrementing register b (well you could, but just play along with me here ... <span class="emoticon">;)</span>).  That is, you don't want to start at 8 and count down 7, 6, 5, all the way to 1.  You want to <em>increment</em> from 1, 2, all the way up until 8.  If you check the instruction sets, you'll soon see that there is no one sole instruction to do this (nope, there is no 'ijc' instruction).  What next?  Well, here's where you use your brain and get a little creative.  <span class="emoticon">:)</span>  Here's one way to count up instead of down:</p>
+
+<pre class="code">
+	ld c,0		;register c is zero
+someLabel:
+	;code here
+
+	inc c		;increment c by one
+	ld a,7		;register a is 7
+	cp c		;compare register a with register c
+	jr nz,someLabel	;if the "virtual subtraction" did not cause the z flag to be set, jump to someLabel</pre>
+
+		<p>This code effectively represents a <code>For(A,0,7,1):End</code>.  If you'll notice, I loop from 0 to 7, not from 1 to 8.  This becomes important when you're dealing with memory, as everything is zero-base indexed.  More on that when we get to the matrix part.</p>
+
+		<h4>Nested For Loops</h4>
+		<p>Now we have one loop, but what about two loops?  If you'll notice, the pseudocode we're attempting to translate has nested loops.  How do you nest one loop inside the other?  <span class="response">"Well that's easy!  Just do it like it is in BASIC and write one inside another, duh!"</span>.  To illustrate what you just suggested:</p>
+
+<pre class="code">
+	ld c,0		;outer loop
+someLabel:
+
+	ld c,0		;inner loop
+someLabel:
+	;code here
+
+	inc c
+	ld a,11		;changed to an 11
+	cp c
+	jr nz,someLabel
+
+	inc c
+	ld a,7
+	cp c
+	jr nz,someLabel</pre>
+
+		<p>It looks like it works, right?  <span class="response">"Hey, there's one For loop in another, and you did say that that was the code for a For loop..."</span>  <strong>No</strong>.  If you still think that this will work as we intended, you have not digested the fact that you are still <em>subconsciously</em> bound by the "BASIC way" and not "adapting" to the CPU.  For one, a register is not a variable ("variable" being an automatic variable in C terminology) - it is static until it is changed.  Jumping to another piece of code will not magically preserve the values of the register.  Everything and anything that you do with your code must be done explicitly - it is this aspect of assembly that explains why code written in pure Z80 code is almost always faster than any compiler or interpreter could ever hope to achieve ("C to Z80" or "BASIC", respectively).</p>
+
+		<p>Even if the above code doesn't work, it shouldn't be discarded - you should "figure out what's wrong and tackle it."  What's going wacko here is that the registers aren't being preserved, so logically, it looks like we need some way to preserve registers!  <span class="response">"Wow, thank you Mr. Obvious!"</span>  The best way would be to use something called a stack.  I won't go too much in depth as it's been thoroughly discussed elsewhere (see your 83pa28d reference <span class="emoticon">:)</span>), but this analogy should get you started on stacks:  Imagine that your two hands (a register <em>pair</em>) can only hold one really heavy lead bar (a 16-bit value/number).  There is also one huge pile (a stack) of really heavy lead bars (values/numbers) that have been placed there previously by somebody else.  You don't want to mess up the pile, since you need to leave things as they are when you're done.  So therefore, if you want to save the lead bar that you're holding, you place it on top of the pile (push the register pair onto the top of the stack).  When you're ready to lead-poison yourself again, you remove the <em>top</em> bar into your hands (pop the top value into a register pair).  With this in mind, see if you can understand the changes I made to the nested loop code:</p>
+
+<pre class="code">
+	ld c,0
+outerLoop:		;For(A,1,8
+	push bc		;save bc onto the stack (check opcode list - "push c" is not valid)
+
+	ld c,0
+innerLoop:		;For(B,1,12
+	push bc		;notice how the push is after the label, not before
+	;code here
+
+	pop bc		;also notice that for every push, there is a pop
+	inc c
+	ld a,$0B	;just illustrating that $0B is the same as 11d
+	cp c
+	jr nz,innerLoop
+
+	pop bc		;the value popped here is the outerLoop counter
+	inc c
+	ld a,$07	;seven
+	cp c
+	jr nz,outerLoop</pre>
+
+		<p>This code should execute a 0...11 loop 8 times.  Look at the strategic placement of the pushes and pops.  Also note that you don't have to pop the same variable as whatever you pushed.  In other words, "push af \ pop hl" is just as legal as "push af \ pop af".  So there we have it - we just translated some nested For loop pseudocode into Z80 assembly by using a combination of references and brainpower. <span class="emoticon">:)</span></p>
+
+		<h4>Addressing a matrix</h4>
+		<p class="response">"We just finished the For loop piece of the pseudocode, now what about the matrix part?"</p>
+
+<pre class="code">
+[A](A,B)</pre>
+
+		<p>Ah, now that we finished one piece, we are ready to move on to another.  Before I continue, you must realize that while we write this code, you must keep in mind that everything is in relation to everyting else - that is, this "matrix addressing" code must fit harmoniously with the For loop code.</p>
+
+		<p>If you have ever used <a href="http://www.ticalc.org/archives/files/fileinfo/359/35907.html">xLIB</a> (essentially a Codex-type program on an OD of steroids <span class="emoticon">:P</span>), you might have noticed that the pseudocode loop above is something that you could use for a tilemap in a game.  In xLIB, the screen is represented by an 8x12 matrix of sprites.  In BASIC, if we wanted to store 5 into the tilemap, we would execute <code>5->[A](A,B)</code>.  Looks easy right?  Well, that's only for BASIC.  The point of all this is that in assembly, there is no hardware to distinguish memory into "rows" and "columns" - <strong>all data is essentially just a stream of bits and bytes</strong>, sort of like a 65,536 element list in BASIC (note that I say "sort of").  <span class="response">"But, but, then how do we make a matrix in assembly?"</span>  The answer is, you make one. <span class="response">;)</span>  For this pseudocode example, you can (and will), set aside a total of 96 bytes (8*12=96... simple math) and force our program to "virtually" set every 12th byte a new row.  <span class="response">"How do we do that?"</span>  Look at each of the four examples below and then realize that <strong><em>they are all identical when assembled</em></strong>:</p>
+
+<pre class="code">TileMap_1:           ;8 rows of 12 zero bytes
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+</pre>
+
+<pre class="code">TileMap_1:           ;96 bytes
+	.db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</pre>
+
+<pre class="code">TileMap_1:           ;96 bytes
+	.fill 96,0</pre>
+
+<pre class="code">TileMap_1:
+	nop	;12 bytes
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop	;12 bytes
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop	;12 bytes
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop	;12 bytes
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop	;12 bytes
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop	;12 bytes
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop	;12 bytes
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop	;12 bytes
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+</pre>
+
+		<p class="response">"So what if there are four ways to declare 96 zero bytes?"</p>
+		<p>Well, this means that you can use any and either one for 96 zero bytes.  However, hopefully, you'll choose one that works and makes sense for what you're doing, and not something overly-superfluous. <span class="emoticon">;)</span>  I'll be using the the first one for the rest of the page as I found it more <em>useful</em> to visualize an 8x12 matrix rather than 96 linear bytes.</p>
+
+		<p>Here's the pseudocode we want to translate into Z80: <code>[A](A,B)</code>.  If we let [A] be TileMap_1, we have TileMap_1[A,B].  If we wanted to address TileMap_1[2,1], could we, therefore, do?:</p>
+<pre class="code">
+	ld a,2
+	ld b,1
+	TileMap_1[a,b]
+
+;... later on in the code...
+TileMap_1:           ;8 rows of 12 zero bytes
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0</pre>
+
+		<p><strong>No</strong>, this is still too BASIC-y.  We need to work on the byte level and not the BASIC level.  <span class="response">"If we can't use the [row,column] format, then what can we use?"</span>  We use a "row" and "column" format.  <span class="emoticon">:P</span>  Notice how we "defined" a row to be 12 bytes.<!--  <span class="note">The following is a big jump in thinking, but try to follow along.</span>-->  There wasn't necessarily anything to stop us from defining a 100 byte row or a 1 byte row.  What makes a "row" then?  Well, here enters the concept of the <em>memory pointer</em>.  If we wanted to <em>point</em> to the "second row", we could do:</p>
+
+<pre class="code">
+	ld hl,TileMap_1+12</pre>
+		<p>Register hl would then <em>point</em> to the "first byte in the second row" (row 2, column 1) and we could use an indirection instruction like <code>ld a,(hl)</code> to get that value.  If we wanted the third row, what would we add in place of <code>12</code>?  The answer is:</p>
+
+<pre class="code">
+	ld hl,TileMap_1 + (2*12)</pre>
+
+		<p class="response">"Huh?  Shouldn't that be a <strong>3</strong>*12 and not a <strong>2</strong>*12 if we wanted the third row?  I mean, come on, we are talking about the <strong>third</strong> row, so that implies the number <strong>3</strong>..."</p>
+		<p>In another programming language, it might, but here you must take into account <em>zero-based</em> indexing.  Assembly is largely zero-based, rather than one-based, because if we wanted the first element in a list, all we would add is zero; second element, add one; and so on and so forth.  It is much more efficient than subtracting one and adding the number, as is the case with one-based (go on and try one-based indexing if you don't believe/understand me).</p>
+
+		<p class="response">"Ok, I know how to point to 'rows';  now how about pointing to 'columns'?"</p>
+		<p>Well, think it through.  If we wanted the <em>first</em> byte of the <em>second</em> row (row 2, column 1), we would do <code>ld hl,TileMap_1 + (1*12)</code> , as we found above.  But if we wanted the <em>second</em> byte of the first row (row 1, column 2), it would follow that we add one, that is:</p>
+
+<pre class="code">
+	ld hl,TileMap_1 + ((0*12)+1)</pre>
+		<p>With enough trials, I hope that you'll come to realize that there is a generic formula (zero-based indexing only) for calculating the memory pointer, namely:</p>
+
+<pre class="code">
+	Base_Pointer+((Y*12)+X)</pre>
+
+		<p>Now that we have a general formula for <code>[A](A,B)</code>, it is time to actually implement it!  Those still stuck in the "BASIC style" might be tempted to write this:</p>
+
+<pre class="code">
+	ld a,2
+	ld b,1
+	ld hl,TileMap_1+((a*12)+b)
+
+;... later on in the code...
+TileMap_1:           ;8 rows of 12 zero bytes
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0</pre>
+
+		<p><strong>No</strong>.  That's not how things roll in assembly. <span class="emoticon">;)</span>  If you were to assemble the above, TASM would interpret the above as a <em>constant</em> not a <em>variable</em> (in addition, TASM will complain about a and b being undefined).  You don't want your registers to masquerade as your variables as much, since this is assembly, not BASIC.  Therefore, we need to break apart the formula itself into even smaller pieces, sort of like subpieces.  If you were to use the formula with pencil and paper, it would make sense that you would:</p>
+		<ol>
+			<li>Multiply the row by a constant 12</li>
+			<li>Add the column to the (row*12) to get an <em>offset</em></li>
+			<li>Add that offset to address TileMap_1</li>
+		</ol>
+
+		<p class="response">"Hey now, I <em>just</em> looked in all the opcode references and there is no instruction to multiply!  Nothing that looks even remotely close to a 'mult' instruction!  Where do I look to find out how to multiply?"</p>
+
+		<p>Your references, obviously.  <span class="emoticon">:)</span>  The fastest way to multiply by a constant is detailed in Day 5 of 83pa28d.  I will definitely be alluding to this page, so it would be in your best interest to read that day as you read the following code, while also keeping in mind how everything "relates" to everything else.  This will probably be the hardest single piece of code that you will follow in this guide, because I am intentionally just "shoving it in your face" rather than explaining it to you step-by-step.  Don't be afraid however!  Be aware and be diligent and apply your newfound knowledge. <span class="emoticon">:)</span></p>
+
+<pre class="code">
+row .equ appBackUpScreen	;This is our temporary RAM variable to store our "row" value
+col .equ row+1			;"column" value
+
+;TileMap_1 points to our pre-defined tilemap
+;we need to get the number in the tilemap:
+;col = column X (should be from 0-11, zero-based indexed)
+;row = row Y (should be from 0-7)
+
+;TileMap_1+((Y*12)+(X))
+
+	;*** 1.  Multiply the row by a constant 12
+
+	ld hl,row
+	B_CALL(_LdHLind)	;hl = value pointed to by row
+
+	;hl * 12 = (hl * 4) + (hl * 8)  <-- read Day 5 on multiplying for why this works
+
+	add hl,hl	;hl = hl * 2 (bit shift = multiply by power of two [again, read day 5])
+	add hl,hl	;hl = hl * 4
+	ld d,h
+	ld e,l		;save hl * 4 result into register de for later
+	add hl,hl	;hl = hl * 8
+	add hl,de	;hl = (hl * 8) + (hl * 4)
+
+	;*** 2.  Add the column to the (row*12) to get an offset
+
+	;now we know Y*12, we need to add X (column)
+	;hl has Y (row)
+
+	ex de,hl		;swap de and hl to save row*12 from destruction
+	ld hl,col
+	B_CALL(_LdHLind)	;hl = (col)
+	add hl,de		;(row*12)+col
+	;now hl has the offset
+
+	;*** 3.  Add that offset to address TileMap_1
+
+	;offset means add/sub from something, in this case, we add to TileMap_1
+	ld de,TileMap_1		;de has the ADDRESS of the byte at TileMap_1, NOT the number
+	add hl,de		;now, hl points to the byte at [Y,X]
+
+;... later on in the code...
+TileMap_1:           ;8 rows of 12 zero bytes
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0</pre>
+
+		<p>If you actually understood all that code, then you deserve a pat on the back! <span class="emoticon">:)</span>  If you didn't, don't worry!  Go back and read this code over and over until you do.  Hopefully, there are enough comments so you understand why each line of code is necessary, because I won't try to explain it step-by-step for you any further.  Read it until you understand, and when you do, give yourself a pat on the back. <span class="emoticon">:)</span>  In case you really don't get it, <strong>keep in mind that the point of all that code above was simply to find TileMap_1+((Y*12)+(X)), our generic formula for <code>[A](A,B)</code>, which is part of our pseudocode we are translating to Z80 assembly</strong>.</p>
+
+		<h3>Piecing it together</h3>
+		<p>Now, all that remains in order to translate our pseudocode to a program is to combine all the pieces!  Here is a copy of the pseudocode in case you forgot it already:</p>
+
+<pre class="code">
+For(A,1,8:For(B,1,12:[A](A,B):End:End</pre>
+
+		<p>In this final product, note how there are parts (such as the For loop code) that need to "relate" and change in order for everything to work bug-free and harmoniously:</p>
+
+<pre class="code">
+.nolist
+#include "ti83plus.inc"
+.list
+
+row .equ appBackUpScreen	;This is our temporary RAM variable to store our "row" value
+col .equ row+1			;"column" value
+
+.org userMem-2
+	.db t2ByteTok,tasmCmp
+
+	;Start of program
+
+	ld a,$00
+	ld (row),a
+outerLoop:			;For(A,1,8
+
+	xor a			;an optimization to set a = 0
+	ld (col),a
+innerLoop:			;For(B,1,12
+
+	call getThePointer	;calling a procedure/function/subprogram for [A](A,B)
+	;now hl has the pointer to (row),(col) of TileMap_1
+
+	ld a,(col)		;a = value pointed to by col
+	inc a			;add one to a
+	ld (col),a		;and save back into col
+	ld b,$0B
+	cp b			;compare a with b
+	jr nz,innerLoop
+
+	;Using indirection here to show how memory pointers are useful
+	ld hl,row
+	inc (hl)		;increment the value pointed to by row by one
+	ld a,7
+	cp (hl)			;compare 7 to the value pointed to by row
+	jr nz,outerLoop
+
+	ret			;quit the program
+
+getThePointer:
+;TileMap_1 points to our pre-defined tilemap
+;we need to get the number in the tilemap:
+;col = column X (should be from 0-11, zero-based indexed)
+;row = row Y (should be from 0-7)
+
+;TileMap_1+((Y*12)+(X))
+
+	;*** 1.  Multiply the row by a constant 12
+
+	ld hl,row
+	B_CALL(_LdHLind)	;hl = value pointed to by row
+
+	;hl * 12 = (hl * 4) + (hl * 8)  <-- read Day 5 on multiplying for why this works
+
+	add hl,hl	;hl = hl * 2 (bit shift = multiply by power of two [again, read day 5])
+	add hl,hl	;hl = hl * 4
+	ld d,h
+	ld e,l		;save hl * 4 result into register de for later
+	add hl,hl	;hl = hl * 8
+	add hl,de	;hl = (hl * 8) + (hl * 4)
+
+	;*** 2.  Add the column to the (row*12) to get an offset
+
+	;now we know Y*12, we need to add X (column)
+	;hl has Y (row)
+
+	ex de,hl		;swap de and hl to save row*12 from destruction
+	ld hl,col
+	B_CALL(_LdHLind)	;hl = (col)
+	add hl,de		;(row*12)+col
+	;now hl has the offset
+
+	;*** 3.  Add that offset to address TileMap_1
+
+	;offset means add/sub from something, in this case, we add to TileMap_1
+	ld de,TileMap_1		;de has the ADDRESS of the byte at TileMap_1, NOT the number
+	add hl,de		;now, hl points to the byte at [Y,X]
+	ret			;and return back to the caller
+
+TileMap_1:           ;8 rows of 12 zero bytes
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+	.db 0,0,0,0,0,0,0,0,0,0,0,0
+.end</pre>
+		<p>There's no need to test this program, because if you can follow the code and <em>trace</em> through it step-by-step, it should be fairly safe to say that the code could work without even running it on a calculator first to verify!  At least, I hope it works - I haven't tested it at all. <span class="emoticon">;)</span>  This is also how programmers (e.g. on forums and during chat) can find out why a piece of code doesn't work in a few minutes of analysis without touching a(n emulated) calculator.  If you've ever wondered how these people are able to do this, well, now you know!<!--  And that is that.--> <span class="emoticon">:)</span></p>
+
+		<h3>Tieing the loose ends together</h3>
+		<p>What we just went through - this <em>process</em> - is something that you'll find very handy when you're analyzing a piece of code, especially disassembled code where there are essentially no comments available at all.  You need to be able to apply your prior knowledge of what you learned into the present happenings:  "What's going on?  What's the point of doing this?  Is it working to do it this way?  Are we all satisfied with the results?" et cetera, et cetera.  I do hope that this way of thinking has helped you in some way or another, and that you'll also go on to make cool, fun, and/or useful programs (in assembly of course!).  <span class="emoticon">=D</span></p>
+
+<!--
+don't learn anything until you need to.
+-->
+		<p><a href="conclusion.html">Continue...</a></p>
+		<p><a href="toc.html">Up to Table of Contents</a></p>
+		<div id="footer"></div>
+	</body>
+</html>

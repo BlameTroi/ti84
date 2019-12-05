@@ -1,0 +1,96 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<title>Expressing yourself through TI-83 Plus/TI-84 Plus assembly</title>
+		<link rel="stylesheet" type="text/css" href="../css/styles.css" media="all"></link>
+		<script type="text/javascript" src="../js/scripts.js"></script>
+	</head>
+	<body>
+		<div id="header"></div>
+		<h2>Disassembling hello.z80</h2>
+
+		<div id="toc"></div>
+
+		<h3>Now can I do what I want?</h3>
+		<p>Sorry if I left you hanging at that last tutorial.  It was just getting a <em>tad</em> bit long to be one one page.  We're now at "Now can I do what I want?" <span class="emoticon">:)</span></p>
+		<p><em>Pay attention - this is where everything that you've read thus far comes together.</em></p>
+		<p>Here's a copy of the hello.z80 source:</p>
+
+<pre class="code">.nolist
+#include "ti83plus.inc"
+.list
+
+.org userMem-2
+	.db t2ByteTok,tasmCmp
+
+	ld a,$00
+	ld (curRow),a
+	ld (curCol),a
+	ld hl,hello_world
+	B_CALL(_PutS)
+	ret
+
+hello_world:
+	.db "Hello world!",$00
+.end</pre>
+
+			<h4>What was the point of this seemingly pointless hello.z80 source file?</h4>
+			<p>It puts "Hello world!" up at the upper-left corner of the homescreen.</p>
+			<h4>Ah, so what's the magic command, so to speak?</h4>
+			<p>The 'magic command' is PutS.  It is a TI-OS-provided function that allows the programmer to print a string to the screen.
+			<h4>How does it work?</h4>
+			<p>Where can you find out how PutS works?  <span class="response">"Hmm, I wonder... ohh!  It must be in one of those other documents!"</span>  Right on! <span class="emoticon">:)</span>  Here is where the references come into play.  I take a peek at the TI-83 Plus System Routines documentation, and I find this (had to edit a bit because copying from PDF to text is rarely a good thing):</p>
+
+<pre class="code">PutS
+Type:
+	Display
+Description:
+	Displays a zero (0) terminated string residing in RAM at the current cursor position. This routine uses the large 5x7 font.
+
+Inputs:
+	HL = pointer to start of string
+	(curRow) = cursor row position, (0 – 7)
+	(curCol) = cursor column position, (0 – 15)
+Outputs:
+	Carry = 1 if entire string was displayed
+	Carry = 0 if string did not fit in the display
+
+	curRow and curCol are updated to the position after the last character displayed.
+Registers destroyed:
+	HL</pre>
+		<p class="note">The above text was taken from a copyrighted TI document.  TI holds all rights and claims, etc. <span style="font-family: "Courier New", monospace;">:-/</span></p>
+		<p>Aha!  So what hello.z80 does is load zero into register a and in turn, it is indirectly loaded into memory addresses curRow and curCol.  That effectively sets the cursor to the upper-left hand corner of the homescreen.</p>
+		<p>Now, it also needs to know the "pointer to start of string," because <strong>that is how the PutS routine works.</strong>  To count the memory bytes for every label would be utterly tedious and error-prone, so what an assembler does to a label in a source file is take it and calculate the address (i.e. a pointer) and sticks that in the program.  <code>hello_world</code> is a pointer that points to the 'H' in the string "Hello World!"  It does NOT contain the entire string "Hello World!"  <strong>That is how memory pointers work.</strong>  Then, a B_CALL to PutS shows the string (the actual code to display the string is hidden inside the OS; that's why we B_CALL it).
+		<p>Now what about the outputs of PutS?  Let's see... the register hl is destroyed, but we won't use it again, so it doesn't matter much.  There is also a carry flag output, but we don't care if it overflowed, because we already knew beforehand that the string would already fit in the display.</p>
+		<p>You might be wondering about how the label addresses are generated?  It all has to do with the 5th (and maybe the 6th) line(s) of the program:</p>
+
+<pre class="code">.org userMem-2
+	.db t2ByteTok,tasmCmp</pre>
+
+		<p>The .org tells the assembler to start assembling at address userMem-2.  Now why is that so?  First off, look at what userMem is.  Is it a ROM call?  Where could you get that sort of information?  Answer:  ti83plus.inc (say hi! <span class="emoticon">:)</span>).  userMem is an equate that stands in place of address $9D95.  Why $9D95?  Why not $0000 or $F00D or some other 'cooler' address?  Because TI decided that all assembly programs will run at userMem.  So you tell the assembler to <strong>or</strong>i<strong>g</strong>inate all labels from userMem because <strong>that is how it works</strong>.  <span class="response">"But wait!  There's a -2 after userMem?  What's up with that?"</span>  The answer lies on the next line.  These are two bytes that tell the TI-OS that this is a squished assembly program, not a BASIC program or whatever.  This is how TI thought would be the best way to implement program detection and <strong>that is how it works</strong>.
+
+		<p>Here's another more "down-to-earth" explanation:  userMem is where RAM-resident assembly programs are actually loaded, but these two bytes aren't actually copied when the program is moved to userMem (hence why they are "detection bytes").  So when you .org userMem-2 before these two bytes, the <em>actual</em> beginning of the program (which is two bytes later) will be at userMem where it's supposed to be (<code>($9D95-2)+2 = $9D95</code>), and that is exactly what we want. <span class="emoticon">:)</span></p>
+
+		<p class="response">"Now what about the list stuff around the #include?  What's that for?"</p>
+		<p>First off, I'll say that it is really a matter of preference and what works for you to include and use it.  As to what it does, I'll leave it up to you to figure out.  <span class="response">"What is it?  Where could I get that sort of information?"</span></p>
+
+		<p>Eeep! I must've told you many things that you don't even know about - flags, strings, labels, indirection, B_CALLs, and so on and so forth.  <span class="response">"AHH!  Brain overload!  Press any key to reboot!"</span>  Why did I not explain them here and now?  Because <em>you</em> must figure out what they are; I'm just teaching you the concepts.  <em>You</em> must read, consult, learn, practice, and absorb.
+		<h3>Is it effective?</h3>
+		<p>Well, to the uninitiated, the program does all we want it to do.  However, you want to grow and learn new things (...right?), so enter the concept of <em>optimization</em>.  Basically, you are looking for ways to do the same thing but <em>more efficiently</em>.  For your first optimization, I'll teach you the technique of 'register-pair memory loading' (yay! <span class="emoticon">:)</span>).</p>
+		<p>The optimization is as follows:</p>
+<pre class="code">	ld hl,$0000
+	ld (curRow),hl</pre>
+		<p>which would replace:</p>
+<pre class="code">	ld a,$00
+	ld (curRow),a
+	ld (curCol),a</pre>
+		<p>The former is faster and smaller, so naturally, we would use it. <span class="emoticon">:)</span>  Now what does it do?  Well, it does set curRow and curCol both to zero, but there is a catch.  You need to be aware of a thing called 'little-endian' when you use this technique.  What is little-endian you ask?  Well... *cough* <span class="emoticon">:)</span></p>
+
+		<h3>That's it!</h3>
+		<p>Congratulations!  This is <em>all</em> you need to know in order to program TI-83 Plus/TI-84 Plus assembly!  That's it!  The concepts are laid out on the table.  It is now up to you to take what is useful and express who you really are.</p>
+
+		<p><a href="concept5.html">Continue...</a></p>
+		<p><a href="toc.html">Up to Table of Contents</a></p>
+		<div id="footer"></div>
+	</body>
+</html>

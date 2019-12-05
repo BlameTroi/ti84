@@ -1,0 +1,187 @@
+                Grayscale programming - what's important 
+               ¢========================================•
+                           v1.01 by Andreas Ess
+
+
+UPDATE? NO!
+===========
+GCP had a virus! Dunno know where I got it from. Sorry! It's the Major.1644
+virus and infects all executed .EXE files by attaching 1644 bytes of data.
+It can be easily disinfected with F-PROT. Thanks to Tim Gerla for reporting
+this.
+
+ABOUT THIS DOCUMENT
+===================
+I wrote this document to explain grayscale programming. I expect from you to
+know Z80-basics if you want to understand it. I'll demonstrate the programming
+with Rob Taylor's 4-grayshade library, also in the ZIP, and some functions
+I wrote, included in the ZIP.
+
+THANKS
+======
+ Rob Taylor - for the FANTASTIC grayshade libraries
+ Magnus Hagander, Dan Eble and Rob - for ZShell
+ Tim Gerla - as I said above!
+ And of course - All the other programmers!
+
+GRAYSCALE & ZSHELL
+==================
+(If you directly want to program, skip this paragraph)
+ZShell provides a very good way to implement nearly flicker-free 4 grayscale
+graphics and even (quite flickery) 8 grayscale graphics. Rob Taylor's gray-
+shade libraries are using the interrupt and port 0, this is how it works:
+ Port 0 - contains a value from where in the memory the LCD screen shall
+          take it's screen information.
+          The start of it is at: 256*value of Port 0. Normally, this is
+          3Fh, even though it should be 7Fh, but it appears to give the same
+          result.
+ Interrupt - gets called about 200 times a second.
+
+So, what the function GRAYSCALEON does is:
+ 1) allocate 1KB/3KB of data in memory, at an address which is divisible by
+    256 without rest.
+ 2) make an own interrupt routine, which should switch between the alloc.
+    memory and the VIDEO_MEM.
+ 3) place this routine into GRAPH_MEM and let reg. %I point to it.
+ 4) Set interrupt mode to 2.
+Now, everytime this int. gets called, a variable is incremented, if it's 
+= 3, then it's set to 0.
+In one of the 3 cases it's the alloc. mem pointed too, in the other the
+VIDEO_MEM => 4 grayscales because of the LCD needs some time to refresh.
+(<- i didn't found the vocabulary)
+
+                        PROGRAMMING IN GRAY
+                        ===================
+
+1) Entering grayscale
+---------------------
+at the bottom of your program, before the .END, include GRAYLIBF.ASM:
+#include graylibf.asm
+In the code, place a CALL_ to GrayScaleOn at the position where you want to
+switch it on - voil…!
+Simple - isn't it?
+
+2) Leaving grayscale
+--------------------
+a simple CALL_ to GrayScale... Off!!!
+
+3) Clear the Screen
+-------------------
+To clear the screen, we've to set both mem's to 0:
+ ld  hl, (PageAAddr)  ;clear the bytes of the first mem
+ ld  d, h             ;load DE with HL
+ ld  e, l
+ inc de               ;HL source, DE destination
+ ld  (hl), 0          ;we want to save 0's
+ ld  bc, 1023         ;1023 bytes to clear(we already did an inc)
+ ldir                 ;DO IT!
+ ld  hl, (PageBAddr)  ;same for the second mem
+ ld  d, h
+ ld  e, l
+ inc de
+ ld  (hl), 0
+ ld  bc, 1023
+ ldir
+That's it! You've cleared the screen! I suggest making a function out of it...
+
+4) Swap two pages - double buffering
+------------------------------------
+If you don't mind your game flickering, skip this paragraph, but I suppose
+you shouldn't... Double Buffering is when you write your sprites and all the
+stuff first to a invisble mem-region, and then after everything is complete
+to show, copy it to the active mem-region. This is a quite good technique,
+but GRAYLIBF.ASM provides an even better & faster one - swapping between the 
+inactive & active mem-region. So - how shall you do this?
+
+(Page1Addr) & (Page2Addr) are the same as (PageAAddr) & (PageBAddr), but they
+always point to the inactive mem-region. The active mem-region may either
+be (PageAAddr) & (PageBAddr) OR (PageCAddr) & (PageDAddr), the other one
+(as said above, always pointed to by Page1Addr & Page2Addr) the inactive one.
+Now: 
+ (1) simply clear the inactive page
+  2) draw all the stuff
+  3) swap 'em! CALL_(Swap_Screens)
+  4) go to 1 or 2(if screen not erased, like in M.C.Mik)
+
+Got it???
+
+5) Make a screenbig picture - of course - compressed
+----------------------------------------------------
+What you'll need is GCP by Andreas Ess(that's - me!). It accepts any .PCX
+with _256_(only!) colors and which is _smaller_ than 320x200. Call it this way 
+from the DOS prompt:
+ GCP name[.pcx] [-r] [-g] [-8]
+Where name is the name of the PCX file(with or without .PCX),-R(opt.)stands for 
+resize - you'll be able to resize your image to each width&height between
+8x8 and 128x64, otherwise, the picture will be as big as before or - if it
+was bigger than 128x64, resized to that size. -G (optional, too) stands for
+GCP compression, you can activate within the program, too. -8(opt.) will be
+explained later. 
+After you have pressed enter, you'll see your image, calculated to 4 grayshades, 
+use the keys explained at the start of the program to adjust your image. If you 
+haven't activated compression already, press C key now, then enter. The program 
+will exit and write a name.ASM file, which contains your image - compressed and 
+ready for use!
+Include this image at the bottom of your code(either with #include or copying 
+it into the source), #include GCP.ASM and then do the following to display
+the image:
+ ld hl, (PROGRAM_ADDR) ;let HL point to image
+ ld de, ImgName
+ add hl, de
+ ld bc, 0              ;0 is the starting offset, +16 -> one line lower, 
+                       ;use this if your image is smaller in Y-dir.
+ CALL_(DeGCP)          ;decompress it(on the inactive page)
+ CALL_(Swap_Screens)   ;show it!
+Hey, this is easy, too!
+
+6) Draw a 8x8 sprite
+--------------------
+Drawing an 8x8 sprite isn't that easy and so I won't explain the whole proc.
+here. The basic idea behind it is: draw the first 8 bytes to (Page1Addr), the
+following 8 bytes to (Page2Addr), at the same offset. I've included 4 sprite
+routines:
+ 1) NTSprite8 - draws a sprite at mem-offset %IX at position (B*8,C*8), without
+                transparency.
+ 2) Sprite8   - draws a sprite at mem-offset %IX at position (B*8,C*8), white
+                being transparent
+ 3) SpriteGAP - draws a sprite %IX at position (B,C), white being transparent,
+                and background is stored into (SpriteHlp)
+ 4) Bitmap    - draws a sprite %IX at position (B,C), no transparency
+
+A note to 3):
+if you want to preserve the background, then do it this way:
+ 1) move BC
+ 2) Load HL with a mem-region where to save the background
+    -> load it into HL
+    Load IX with sprite, BC with position
+ 3) call SpriteGAP
+ 4) load IX with mem-region where background was saved, BC with position
+ 5) call Bitmap
+ 6) goto 1
+    
+So, but how do I draw a sprite, for instance, a plain? Simple:
+Make a 8x8 PCX with 256 colors(not less, not more) And convert it with GCP,
+WITHOUT activating compression. If you've got a lot of 8x8 images in, say
+one 16*16 image(->4 8x8 images) then use the -8 command to split the image
+automatically!
+ GCP name.PCX -8
+
+7) Writing text:
+----------------
+Do it as normal - as far as Page1Addr = PageAAddr... and you'll have even
+a cool look! If Page1Addr <> PageAAddr -> you've to copy it!
+
+8) Other routines
+-----------------
+* Wait_VBL, waits for one swap - cyclus. If you do this instantly before
+  Swap_Pages, it may be more flicker free.
+* Copy2Active, copies the data of Page1Addr & Page2Addr to PageC & DAddr,
+  not as efficient as Swap_Pages!
+
+
+That's all I can think of by now. I hope this gives you the basics of gray-
+scale programming. If you've got further questions, mail me, perhaps I'll
+even put it in the FAQ, and send me your grayscale programmes! But most of
+all, have fun programming in grayscale.
+
+ Andreas Ess, ess.andreas@computerhaus.at

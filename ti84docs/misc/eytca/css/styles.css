@@ -1,0 +1,107 @@
+body {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 13px;	/* 82% 13px 9.8pt */
+	line-height: 1.3em;
+	margin: 2em;
+}
+
+/* Table of Contents */
+div#toc div {
+	margin-left: 2em;
+	list-style-type: disc;
+}
+a {
+	text-decoration: none;
+	color: #4682B4;
+}
+a:visited {
+	color: #336699;
+}
+a:hover {
+	text-decoration: underline;
+}
+a.page {
+	display: list-item;
+}
+a.indent {
+	/*text-indent: 1em;*/
+	margin-left: 1em;
+}
+a.indent2 {
+	margin-left: 2em;
+}
+h1 {
+	text-align: center;
+	margin-bottom: 1em;
+	font: bold italic 2em Georgia, Times, "Times New Roman", serif;
+	color: #0033CC;
+}
+h2 {
+	color: #4C4FBE/*348C8B/**/;
+}
+h3, h4, h5 {
+	color: #3D72A4;
+}
+.emoticon {
+	font-size: 9pt;
+	font-family: "Courier New", monospace;
+	/*text-decoration: blink;*/
+}
+pre.code {
+	border-left: 1px dashed black;
+	padding-left: .5em;
+	background-color: #EEEEEE;
+	overflow: auto;
+}
+.response {
+	font-family: "Courier New", monospace;
+	color: black;
+}
+span.response:hover {
+	border-bottom: 1px dashed silver;
+}
+p.response:hover {
+	border-left: 1px dashed silver;
+	padding-left: .5em;
+	margin-left: .5em;
+}
+
+.quote {
+	font-family: serif;
+	font-size: 1.2em;
+	text-align: center;
+}
+.note {
+	font-size: xx-small;
+}
+
+/* Ruthsarian Layouts code */
+/*
+	Time to try and get all the heading elements to the same size
+	regardless of browser. (IE seems to put them a big bigger
+	than Mozilla, typically.)
+*/
+h1
+{
+	font-size: 210%;
+}
+h2
+{
+	font-size: 180%;
+}
+h3
+{
+	font-size: 140%;
+}
+h4
+{
+	font-size: 126%;
+}
+h5
+{
+	font-size: 110%;
+}
+h6
+{
+	font-size: 100%;
+}

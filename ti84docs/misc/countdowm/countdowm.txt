@@ -1,0 +1,22 @@
+84 + Countdown
+
+Description: this is a tutorial for a five second countdown that you can incorporate into your programs.
+
+Countdown:
+
+this is code for a countdown starting at 5
+
+5=>A
+startmr+A=>x
+Lbl 1
+(output,1,1,x-startmr)
+if x-startmr=0
+stop
+goto 1
+
+the program adds 5 to the current time them displays the difference in seconds between the time and the time five seconds in the future
+
+to change the time it countsdown to change what number you store to a at the beginning of the program
+
+
+

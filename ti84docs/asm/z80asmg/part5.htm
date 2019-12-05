@@ -1,0 +1,241 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Z80 Assembly</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="Stylesheet" href="normal.css">
+</head>
+<body>
+<h1>Z80 Assembly - Common Techniques</h1>
+<p>This chapter discusses various useful techniques that make data manipulation simpler and more effective. Most of the concepts introduced here are not really Z80 specific, they can be used in any low-level programming language.</p>
+<h2>Composite data structures</h2>
+<p>It helps a great deal if you organise your data in a sensible way, which makes it easier to locate and access. There are no general solutions, since data can be of infinitely many kinds. However, most problems can be solved by combining some basic structures.</p>
+<h3>Arrays and matrices</h3>
+<p>The simplest of structures is the array. It is a series of elements of the same kind, which come one after the other in the memory. We have already seen it in this guide, but it was only sequentially accessed so far. If we want to access any given element of the array, we can refer to it by its index. Given the index it is possible to calculate its location in the memory. It is advisable to give the first element the index 0, this way the calculation will be the following:</p>
+<pre>
+  ld hl,ArrayAddress             ; HL points to the first element of the array
+  ld de,Index                    ; DE contains the index of the element
+  add hl,de                      ; The address of the DEth element: HL + DE = ArrayAddress + Index
+  ld a,(hl)                      ; We have the element in the accumulator</pre>
+<p>This code works if the elements of the array are bytes. What happens if we need larger data units? The solution is obvious: the index has to be multiplied by the element size before adding it to the array&rsquo;s base address. Let&rsquo;s say we have an array of 32-bit (i. e. 4-byte) elements. A way to calculate the address could be the following:</p>
+<pre>
+  ld de,ArrayAddress             ; DE points to the first element of the array
+  ld hl,Index                    ; HL contains the index of the element
+  add hl,hl                      ; Multiplying HL by 4
+  add hl,hl
+  add hl,de                      ; The address of the element: DE + HL = ArrayAddress + Index * 4
+  ld c,(hl)                      ; We have the element in DEBC
+  inc hl
+  ld b,(hl)
+  inc hl
+  ld e,(hl)
+  inc hl
+  ld d,(hl)</pre>
+<p>Note that we had to change the role of <tt>HL</tt> and <tt>DE</tt> due to the limitations of the Z80 instruction set. To shift <tt>DE</tt> leftwards would require using shift instructions, which are more expensive both in size and in execution time than <code>add hl,hl</code>. If the size of the data unit is not a power of 2, the case is a bit complicated, but you can still do without a general multiplication routine, which would be slower. In fact the trick is to use an optimised multiplication for the particular constant we need. E. g. let&rsquo;s see what we can do if the element size is 12 bytes:</p>
+<pre>
+  ld hl,Index                    ; HL contains the index of the element
+  add hl,hl                      ; HL = Index * 4
+  add hl,hl                      ;
+  ld d,h                         ; DE = Index * 4
+  ld e,l
+  add hl,hl                      ; HL = Index * 8
+  add hl,de                      ; HL = Index * 12
+  ld de,ArrayAddress
+  add hl,de                      ; HL = ArrayAddress + Index * 12
+  ...                            ; Do whatever with the data</pre>
+<p>As you can see, all we did was decomposing the constant to a sum of powers of 2: 12 = 4 + 8.</p>
+<p>A matrix is literally a 2-dimensional array, which means that each element is indexed by 2 numbers (a row index and a column index). It is best to regard it as an array of arrays, which makes it easy to derive the necessary calculations from what we learned above. The most frequent way to store a matrix is using an array whose elements are the rows of the matrix, themselves being arrays of equal length of matrix elements. Analogously with the above case you should aim for sizes that are powers of 2. E. g. if the matrix has 15 columns, each row will be an array of length 15. However, you can access the data faster if you pad each row with a dummy element, which leads to simpler calculations. An example of a 4x4 matrix:</p>
+<pre>
+  ld bc,$0302                    ; Let BC contain the indices: B = row, C = column
+  ld h,0                         ; First we have to find the Bth row
+  ld l,b
+  add hl,hl                      ; A row is 8 bytes long (4 words)
+  add hl,hl
+  add hl,hl
+  ld de,MatrixData
+  add hl,de
+  ex de,hl                       ; Now DE holds the address of the 3rd row
+                                 ; (This instruction exchanges the values of DE and HL very fast)
+  ld h,0
+  ld l,c
+  add hl,hl                      ; HL = C * 2
+  add hl,de                      ; HL points to the 2nd element of the 3rd row
+  ld c,(hl)                      ; BC = 329 if everything went well
+  inc hl                         ; (note that row and column numbering starts from zero)
+  ld b,(hl)
+  ...
+
+MatrixData:
+  .word 519, 971, 238, 416
+  .word 874, 627, 713, 128
+  .word 592, 365, 982, 487
+  .word 751, 537, 329, 116</pre>
+<p>In real life programs you should try to use single byte elements, both because of memory constraints and possible speed issues.</p>
+<h3>Records</h3>
+<p>A record is the encapsulation of different kinds of data into one unit. Arrays and matrices can contain records as elements, which often is the case. In high level languages you can refer to each piece of data (&bdquo;field&rdquo; of the record) by its name. However, in assembly we only have numbers for this purpose. The easiest solution is using the offset of each element to reference it. The offset is the distance in bytes from the first byte of the record.</p>
+<pre>
+Name:
+  .byte "Patai Gergely   "       ; Name padded to have a length of 16 bytes
+Year_of_birth:
+  .word 1982                     ; 2 bytes
+Residence:
+  .byte "Budapest"               ; 8 bytes
+Reserved:
+  .byte 0,0,0,0,0,0              ; Just to make the record length a power of 2</pre>
+<p>Take this 32-byte record. If you know its memory address, you can determine the address of each field by adding the appropriate offset: 0 for name, 16 for year of birth, 18 for city of residence. Since these numbers are fixed, you should create equates for them. An equate is a named constant. If you use TASM, you should use the following syntax:</p>
+<pre>
+Ofs_Name       .equ 0            ; Offset to name
+Ofs_YOB        .equ 16           ; Offset to year of birth
+Ofs_Resid      .equ 18           ; ...</pre>
+<p>The meaning of <code>.equ</code> is the following: if the assembler encounters the text on its left side, it acts as if it had read the right side in its place. E. g. every time you write <var>Ofs_YOB</var>, the assembler will use 16 instead (the right side can be any string, it does NOT have to be a numeral). The importance of having fixed offsets is that you can do a part of the address calculation at compilation time. E. g. consider having an array of this kind of records. We want to determine the city of residence of the n<sup>th</sup> element:</p>
+<pre>
+  ld de,ArrayAddress+Ofs_Resid   ; DE points to the residence field of the first element of the array
+  ld hl,Index                    ; HL contains the index of the element in question
+  add hl,hl                      ; Multiplying HL by 32 (shifting leftwards by 5 bits)
+  add hl,hl
+  add hl,hl
+  add hl,hl
+  add hl,hl
+  add hl,de                      ; HL contains the address of the field in question</pre>
+<p>Using these structures only you can model most of the problems that might come up.</p>
+<h3>Variable size records</h3>
+<p>In many cases memory usage is more critical than speed, so using a bit harder to access structure might be a good idea. Variable size records can come up in many situations when a field can have values in a wide range, e. g. a line of text. There are basically two ways to treat this problem:</p>
+<ol>
+<li><b>Index table</b> - maintaining an array of pointers which contain the address of each record; this adds two extra bytes per record.</li>
+<li><b>Calculating addresses on the fly</b> - instead of storing each pointer it is also possible to traverse the whole list of records each time, which might be beneficial memory-wise when there are many records but applicable only when you can allow slower access.</li>
+</ol>
+<p>One can argue about using linked lists as well. It means that each record contains a pointer to the next (and possibly previous) record instead of a separate index table. However, this structure is to avoid at all cost on low-end hardware, because it unites the drawbacks of the two alternatives above: slow access and extra memory usage.</p>
+<p>To illustrate these techniques let&rsquo;s use this list:</p>
+<pre>
+Numbers:
+  .byte 3, "one"
+  .byte 3, "two"
+  .byte 5, "three"
+  .byte 4, "four"
+  .byte 4, "five"</pre>
+<p>Declaring an index table could be done e. g. in the following way:</p>
+<pre>NumberPointers:
+  .word Num_1, Num_2, Num_3, Num_4, Num_5
+
+Numbers:
+Num_1:
+  .byte 3, "one"
+Num_2:
+  .byte 3, "two"
+Num_3:
+  .byte 5, "three"
+Num_4:
+  .byte 4, "four"
+Num_5:
+  .byte 4, "five"</pre>
+<p>The assembler will substitute the apporpriate addresses into the <var>NumberPointers</var> array. The labels <var>Numbers</var> and <var>Num_1</var> will obviously have the same value, but it still makes sense to declare both, because they have different meanings for the programmer. Note that the actual data structure remained intact, only an index table was created. Finding the address of an element looks like this:</p>
+<pre>
+  ld de,NumberPointers           ; DE contains the address of the pointer table
+  ld hl,Index                    ; HL contains the index of the element in question
+  add hl,hl                      ; A pointer is 2 bytes long
+  add hl,de                      ; At this point HL points to the appropriate pointer
+  ld a,(hl)                      ; Simulating ld hl,(hl) so HL finally points to the element
+  inc hl
+  ld h,(hl)
+  ld l,a</pre>
+<p>E. g. if <var>Index</var> is 3, <tt>HL</tt> will point to the string "four", since indexing starts from zero. We still need to include the length of the string in the record, because the routine handling it has to determine somehow where it ends. If we don&rsquo;t want to waste memory for the index table, we can calculate it on the fly:</p>
+<pre>
+  ld hl,Numbers                  ; HL points to the array
+  ld bc,Index                    ; BC indexes the element we need
+  ld d,0                         ; Zeroing the high byte of DE
+FindElement:
+  ld a,b                         ; Checking if BC is zero and jumping out of the loop if it is
+  or c                           ; (it means that we reached the element)
+  jr z,Found
+  ld e,(hl)                      ; Reading the length and advancing
+  inc hl
+  add hl,de                      ; HL = HL + E (because D is zero)
+  dec bc
+  jr FindElement
+Found:
+  ...                            ; Do whatever with the data (pointed by HL)</pre>
+<p>As you can see, this method requires you to read the data and determine the size of each record to be able to advance. It is certainly more complicated than the index table method, but the memory savings can be significant in a long list of records. However, usually you are altogether better off using an index table, since calculating the size this way for a more complex record structure would need much extra code that also takes up precious memory.</p>
+<h2><a name="fixed"></a>Fixed-point arithmetic</h2>
+<h3>Theoretical background</h3>
+<p>There are many cases when integers are not enough to solve a problem. Floating point arithmetic is a good way to represent numbers with fractions in a wide range, but it is very slow to work with. If you can live without the wide range &ndash; which is practically always the case &ndash;, fixed point arithmetic provides a good compromise. The basic idea is simulating fractions with integers by declaring some of the lower bits of the numbers to be on the right side of the decimal point. It is probably easier to understand in base 10 first. Let&rsquo;s say we need to represent numbers between 0 and 1000 (the latter exclusive) with a precision of 0.001, i. e. in the range 0&ndash;999.999.</p>
+<p>Since we have to use an integer algebra, we need to map this range to an integer range. The choice is obvious: we will use the numbers between 0 and 999999 for this purpose, and regard the last three digits (extending with zeroes on the right if necessary) as the fractional part. Mathematically this means that the fixed point representation is 1000 times the original number. Having the range defined is not enough though, we need some basic operations as well: addition, subtraction, multiplication and division. These can be easily explained through examples:</p>
+<ol>
+<li>13.924+56.401=70.325. When converting to fixed point we get 13924+56401=70325, which means that addition (therefore subtraction as well) works directly on fixed point numbers. It is easy to see why: 13924+56401=13.924*10<sup>3</sup>+56.401*10<sup>3</sup>=70.325*10<sup>3</sup>=70325, i. e. the sum of the integers is automatically the fixed point representation of the result.</li>
+<li>13.924*56.401=785.327524. Using fixed point: 13924*56401=785327524, which is the representation of 785327.524 &ndash; exactly 1000 times the number we wanted. The reason for the difference becomes clear if we expand the multiplication:<br>13924*56401=13.924*10<sup>3</sup>*56.401*10<sup>3</sup>=785.327524*10<sup>6</sup>=(785.327524*10<sup>3</sup>)*10<sup>3</sup>=785327524, where the expression between parentheses is the fixed point representation of the correct result, which is obviously multiplied by the factor which is used to distinguish between the numbers and their integer representations. Therefore you have to divide the result with this factor, which effectively means shifting the decimal point leftwards by three positions (or the number rightwards, as we will see). You always have to shift with as many positions as the number of digits on the right side of the decimal point. However, we still have a problem: the result would be 785327.524, which is not an integer. The fractional part must be dropped, otherwise the result won&rsquo;t fit in our range. Hence according to our algebra 13.924*56.401=785.327, we lost the last three digits. The loss of precision can be decreased by using more fractional digits, since the loss is bounded by the smallest possible number: 0.001 in this case.</li>
+<li>No need to repeat the above argumentation, the case is very similar with division. The only difference is that you have to compensate in the opposite direction, i. e. multiply by 1000 (always with the factor of the divisor) or shift the decimal point rightwards accordingly. Note that you should do this multiplication <i>before</i> the actual division is performed, otherwise the fractional part of the result would be lost all the time (this is because the rounding/truncating step is not optional).</li>
+</ol>
+<p>To sum up, the basic operations can be directly performed on the fixed point representations of the numbers, and an easy to perform correction is needed in the case of multiplication and division: shifting in the appropriate direction. Naturally when it comes to implementing these ideas in assembly, we should choose base 2 instead, so the corrections can be done using simple shifting. Even better, it can be done without shifting, if the number of bits to represent the fractional part is a multiple of 8, because in that case the correction means discarding the lower byte(s) after multiplication and padding the dividend with extra (zero) byte(s) before division.</p>
+<h3>Interpolation</h3>
+<p>Just to make this section a bit lively, let&rsquo;s solve a problem that seems to come up quite frequently in various discussions. The question is the following: if we know the coordinates of two points, how can we determine the path of an object going on a straight line between them and calculate some coordinates along this path? The first step is clearing up the relevant maths. I assume that the points are on a two dimensional plane, and we know their (x, y) coordinates: x<sub>1</sub>, y<sub>1</sub>, x<sub>2</sub> and y<sub>2</sub>.</p>
+<p>The coordinates of any point on the line containing the two given points can be calculated using the following formula:</p>
+<ul>
+<li>x = x<sub>1</sub> + m * (x<sub>2</sub> &ndash; x<sub>1</sub>)</li>
+<li>y = y<sub>1</sub> + m * (y<sub>2</sub> &ndash; y<sub>1</sub>)</li>
+</ul>
+<p>If m is zero, the resulting coordinates will be that of the first point (x<sub>1</sub>, y<sub>1</sub>), and when it is one, the formula gives the second point (x<sub>2</sub>, y<sub>2</sub>) as result. If m takes any value between 0 and 1, we get points on the segment connecting the two points, whose distance from the first point is directly proportional to m (e. g. we get the central point if m = 0.5). Obviously this problem cannot be handled using integer math directly, since m is a fraction.</p>
+<p>Let&rsquo;s assume that both coordinates are in the range 0-127. In this case it is enough to allocate 8 bits for the integer part (note that we have to use signed numbers, that&rsquo;s where the 8<sup>th</sup> bit comes from). The bits needed for the fractional part can be determined through experimentation. The more bits you use, the more exact numbers you get, but computation will also get slower. For this problem 8 bits are enough, believe me. Thus, the new formula using fixed point will be this one (I denote fixed point numbers with capital letters):</p>
+<ul>
+<li>X<sub>1</sub> = x<sub>1</sub> * 256; Y<sub>1</sub> = y<sub>1</sub> * 256; X<sub>2</sub> = x<sub>2</sub> * 256; Y<sub>2</sub> = y<sub>2</sub> * 256; M = m * 256, therefore</li>
+<li>X = X<sub>1</sub> + M * (X<sub>2</sub> &ndash; X<sub>1</sub>) / 256 = X<sub>1</sub> + M * (x<sub>2</sub> &ndash; x<sub>1</sub>)</li>
+<li>Y = Y<sub>1</sub> + M * (Y<sub>2</sub> &ndash; Y<sub>1</sub>) / 256 = Y<sub>1</sub> + M * (y<sub>2</sub> &ndash; y<sub>1</sub>)</li>
+</ul>
+<p>Note the little trick: since the original coordinates are integers themselves, we can leave out the zero padding step and the division by 256 (i. e. the correction after the multiplication by M), which would just cancel each other anyway. Also, since m is a number between 0 and 1, we can represent it using only the fractional part of M, hence with a single byte. The attentive reader can ask the question what happens if m is 1, i. e. M should take the value 256. There are two answers depending on the situation:</p>
+<ol>
+<li>Use 255 instead of 256 when the difference is negligible. In this particular problem this is usually a good solution.</li>
+<li>Treat it as a special case: if M would be 256, immediately return the coordinates of the second point without any calculation.</li>
+</ol>
+<p>Why would we take all this hardness just to represent m using a single byte? Well, because in this case we can use a previously presented <a href="part4.htm#mul8">multiplication routine</a> (Mul8) by substituting M into <tt>A</tt> and (x<sub>2</sub> &ndash; x<sub>1</sub>) into <tt>DE</tt> (change x to y for the other coordinate). Note that the subtraction gives a signed number. However, to represent this number properly in 16 bits, we have to calculate its <i>sign extension</i>, which means filling the high byte with the highest bit of the low byte:</p>
+<pre>
+  ld a,c                         ; C contains an 8-bit signed value
+  rla                            ; Now the carry contains its sign
+  sbc a,a                        ; A = %00000000 if C is positive, %11111111 if negative
+  ld b,a                         ; BC contains the 16-bit representation of the same signed value</pre>
+<p>Using this knowledge we can turn the above formula into Z80 code (I let you do the Y part on your own):</p>
+<pre>
+  ld a,(X1)                      ; Calculating (x2-x1)
+  ld e,a
+  ld a,(X2)
+  sub e
+  ld e,a
+  rla
+  sbc a,a
+  ld d,a
+  ld a,(M)                       ; Multiplying with M
+  call Mul8
+  ld a,(X1)                      ; Adding X1 (i. e. x1 to the high byte)
+  add h
+  ld h,a                         ; HL = X1 + M * (x2 - x1) = X</pre>
+<p>To avoid confusion: the referenced variables <var>X1</var> and <var>X2</var> contain the 8-bit integer values of x1 and x2, while <var>M</var> contains m * 256, i. e. M. The idea is the same in every application: work out the math first on paper with all the possible optimisations, then start coding it preferably with the fastest routines you already have.</p>
+<h2><a name="lut"></a>Look-up tables (LUTs)</h2>
+<p>Often you find yourself in a contradictory situation: there is a complicated calculation you have to perform, but you need to execute it fast. Fixed point algebra is a handy tool, but it has its limits. In many cases you are better off if you calculate some intermediate results and put them directly into your program in a convenient data structure (typically an array). When you need a value, you simply retrieve it from this resource in a blink. This is the general idea, and actually there is no more to explain in it.</p>
+<p>The drawback of using LUTs is obviously that the program will take up more memory than the one which calculates more values on the fly. This is the eternal dilemma: <b>speed or size?</b> The decision is up to you, the programmer. Usually the answer is not a simple yes or no, there can be intermediate levels as well. Let&rsquo;s look at a simple example: implementing a fast sine function.</p>
+<p>As we know, the sine function returns values between -1 and 1, and it has a period of 2*pi. The fractions can be easily represented in fixed point algebra after a multiplication by a power of 2, as we have seen above. However, to ease our life, the period should also be transformed into a power of 2, because in that case the value of the function can be determined from the lower bits of its input. To cut the story short, here is a practical solution: make a 256-byte array, which contains the values of round(127*sin(n*pi/128)). The multiplication by 127 is the conversion to fixed point with a 7-bit fractional part. This allows us to store each value in a single byte (the 8<sup>th</sup> bit is needed for the sign). We cannot multiply by 128, because in that case the value of 1 (e. g. sin(90°)) would overflow. The expression n*pi/128 stretches the function along the x axis to have a period of 256. Hence we have an array of 256 bytes, which can be accessed as explained above.</p>
+<p>This is the array I generally use (it was generated using the formula mentioned):</p>
+<pre>
+Sin_Table:
+  .byte 0,3,6,9,12,16,19,22,25,28,31,34,37,40,43,46
+  .byte 49,51,54,57,60,63,65,68,71,73,76,78,81,83,85,88
+  .byte 90,92,94,96,98,100,102,104,106,107,109,111,112,113,115,116
+  .byte 117,118,120,121,122,122,123,124,125,125,126,126,126,127,127,127
+  .byte 127,127,127,127,126,126,126,125,125,124,123,122,122,121,120,118
+  .byte 117,116,115,113,112,111,109,107,106,104,102,100,98,96,94,92
+  .byte 90,88,85,83,81,78,76,73,71,68,65,63,60,57,54,51
+  .byte 49,46,43,40,37,34,31,28,25,22,19,16,12,9,6,3
+  .byte 0,-3,-6,-9,-12,-16,-19,-22,-25,-28,-31,-34,-37,-40,-43,-46
+  .byte -49,-51,-54,-57,-60,-63,-65,-68,-71,-73,-76,-78,-81,-83,-85,-88
+  .byte -90,-92,-94,-96,-98,-100,-102,-104,-106,-107,-109,-111,-112,-113,-115,-116
+  .byte -117,-118,-120,-121,-122,-122,-123,-124,-125,-125,-126,-126,-126,-127,-127,-127
+  .byte -127,-127,-127,-127,-126,-126,-126,-125,-125,-124,-123,-122,-122,-121,-120,-118
+  .byte -117,-116,-115,-113,-112,-111,-109,-107,-106,-104,-102,-100,-98,-96,-94,-92
+  .byte -90,-88,-85,-83,-81,-78,-76,-73,-71,-68,-65,-63,-60,-57,-54,-51
+  .byte -49,-46,-43,-40,-37,-34,-31,-28,-25,-22,-19,-16,-12,-9,-6,-3</pre>
+<p>Maybe you do not want to waste 256 bytes for this purpose. Because of the symmetry of the function, you can just store a quarter of the period (using 64 bytes), and do some simple calculation to get the correct result:</p>
+<ol>
+<li>N is the original 8-bit index AND 63, i. e. the lowest 6 bits (0-5) of the index</li>
+<li>If bit 6 of the index is 1, you have to use (N XOR 63)<sup>rd</sup> element of the array (this is equal to 63 &ndash; N), and if it is 0, you simply take the N<sup>th</sup> element.</li>
+<li>If bit 7 of the index is 1, you have to multiply the retrieved value by -1 (e. g. using the <code>neg</code> instruction), otherwise you can use it as is.</li>
+</ol>
+<p>I think that&rsquo;s enough for this part; use your imagination to put these ideas in motion.</p>
+<p><a href="index.htm">Back to the index</a></p>
+</body>
+</html>

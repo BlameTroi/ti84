@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<title>Expressing yourself through TI-83 Plus/TI-84 Plus assembly</title>
+		<link rel="stylesheet" type="text/css" href="../css/styles.css" media="all"></link>
+		<script type="text/javascript" src="../js/scripts.js"></script>
+	</head>
+	<body>
+		<div id="header"></div>
+		<h2>Applying the Concepts - A BASIC Library</h2>
+		<div id="toc"></div>
+		<p>At this point in the guide, you probably have all this tangled mess of "incoherent coherent-ness."  All these ideas are fine and dandy, but what do you do with them?  <span class="response">"Uhm, I dunno...  tell me because I'm too lazy to think for myself - you need to do the work for me, so I have more time to do more important things, like putting other people down and declaring myself the best."</span>  Well, use them of course!  Now is where I will help you explore the applications of all the concepts that you have read in the previous sections.</p>
+		<h3>Minimizing the Limitations of BASIC</h3>
+		<p>If you have ever seriously dealt with BASIC, you will soon realize that TI imposed many limits as to how powerful BASIC can get.  So many exist in fact that these limitations are what attracts programmers to the freedom of assembly in the first place!  Displaying a sprite from a matrix with solely Pxl-On and Pxl-Off commands gets to be quite a drag.  Indeed, it gets to be so much of a drag that a BASIC programmer will thus attempt to write some Z80 code, fully aware of the fact that his (or her) limited BASIC programming methods and ways don't "work" in assembly (based on suggestions from peers).  Unfortunately, he/she is not consciously aware that his/her background in BASIC has subconsciously taught him/her to approach Z80 in terms of the BASIC "style."  It is no wonder those starting with assembly "get stuck" and confused, ...and frustrated, ...and lost, ...and ultimately, <em>trapped</em>.  Logically, these programmers, discouraged on their assembly journey, seek for other ways to be able to use programs that are powered by super-efficient assembly code.  This lends itself to the idea of a BASIC/assembly hybrid program/library.</p>
+
+		<p>If you haven't already, play around with the functions of a BASIC library - a good example of one is <a href="http://www.ticalc.org/archives/files/fileinfo/318/31824.html">Codex</a>.  You will notice that for convenience of the BASIC programmer, the Ans variable is used as the input (a.k.a. parameter) followed by a call to the program via Asm(.  It's nice that you can turn off the run indicator by typing <code>19:Asm(prgmCODEX</code> in a BASIC program.  Hey, you could impress your other calculator-programming classmates!  <span class="emoticon">:P</span>  Now, how would you like to write such a program from scratch?  How cool would that be?  <span class="emoticon">:)</span>  Well, if you're interested, then follow along! <span class="emoticon">:)</span></p>
+
+		<h3>What do I want to do?</h3>
+		<p class="response">"Let's see... I want a Codex-type program that has Ans as input, not A,B,theta, or any other variables.  I'd like Ans=0 to represent run-indicator off and Ans=1 to do black-on-white text.  I also want to be able to check for any potential crashes (e.g.,  Ans=2 or Ans={1,2,3,4} or Ans="HELLO 1234"), which are undefined parameters for this program."</p>
+		<p>Note that you have specific goals outlined ...</p>
+		<h3>Can I do what I want?</h3>
+		<p class="response">"Hmm, no.  I don't know how to turn off the run-indicator, nor how to set black-on-white text in assembly.  And how do I check the Ans variable?"</p>
+		<p>... but you have no clue on how to do them...</p>
+		<h3>What do I have to work with?</h3>
+		<p class="response">"Well, I have many references to consult.  I should check in each one until I find what I want.  Also, these types of programs have been written before, so I should go download a 'Codex-type' program with source and view it."</p>
+		<p>... so you consult your references first.  This can range from that list I mentioned in Concept 3 or even a calculator forum thread.  Indeed, it is very common for someone before you to have already asked a question like yours at a public calculator forum.  If you're having difficulty looking for a forum, search and ask around and you'll eventually be pointed to one.</p>
+
+		<p>Another thing that I want to emphasize is the use of the source of preexisting programs.  The advantage of open-source software is that you don't have to "reinvent the wheel" as often.  You can read the source of other authors and incorporate their useful techniques into your program.    While it is outright plagiarizing to copy and paste code without the author's permission (depending on the copyright/copyleft license), it shouldn't be a problem to adapt their code.  Just use your common sense, but whatever you do,  <strong>don't underestimate the learning potential of reading the source of other programs</strong>.  I have observed that most, if not all, of the successful programmers today are self-taught - remember, nobody can teach something to someone better than oneself.</p>
+
+		<h4>The Run Indicator</h4>
+		<p>It's that squiggly-thingy at the upper-right hand corner of your screen that you are annoyed by so much.  To get rid of it, we have to first identify which reference the turn-off-run-indicator code would most likely reside in.  As you deal more with the references, this will become second nature to you, but for now, I'll tell you that the answer is in the TI-83 Plus SDK Guide (sdk83pguide.pdf).  Open it up in a PDF reader (e.g. Adobe Acrobat) and search for "run indicator" (without the quotes).  Eventually, after you keep hitting "Find Next," you'll see:</p>
+
+<pre class="code">
+indicRun	| indicFlags 	| 1 = run indicator is enabled
+		|		| 0 = run indicator is disabled
+
+Controls the run indicator that is
+displayed in the upper right corner
+of the display. See Run Indicator
+section.</pre>
+		<p>and:</p>
+<pre class="code">
+RunIndicOff		Disables the run indicator located in the upper right corner of the display</pre>
+
+		<p class="response">"What?  Are there two ways to disable the run indicator?"</p>
+		<p>The short answer is: yes.  The long answer is still yes <span class="emoticon">:)</span> , but it comes back to which is better to optimize for - speed or size?  For this program, we'll optimize for size and go with RunIndicOff.  Because RunIndicOff is an entry point, we need to B_CALL it.  Therefore, only one line of code is necessary:</p>
+
+<pre class="code">
+	B_CALL(_RunIndicOff)</pre>
+
+		<p><strong>Side note:</strong>  Remember my endless <span class="note">and what you may think as exceedingly annoying and distracting</span> ramblings on water and adapting?  I am using the B_CALL(_EntryPoint) syntax because it works for me.  You might not like this, instead going with B_call(_EntryPoint) or even bcall(_entrypoint).  Just make sure that whatever style you choose, you define the necessary macro and options as required by your preferred assembler (in case you didn't know, a B_CALL(_EntryPoint) is a macro that expands to "rst 28h \ .dw _EntryPoint" - look it up if you don't believe me).</p>
+
+		<h4>Reverse-Video Text</h4>
+		<p>It's a fancy name for black-on-white text, that's all.  Once again, you have no clue how to do this.  Once again, you'll have to go back and consult your many references for answers.  I'll just tell you up front that the answer is again in the SDK guide.  So open it up and search for whatever search terms you think is appropriate.  By trial-and-error, I found that "reverse video" was a good query, and if you search for this, you should stumble upon something like the following:</p>
+
+<pre class="code">
+textInverse 	| textFlags 	| 1 = write in reverse video
+
+Affects both the normal 5-&gt;7 font and the small variable width font.</pre>
+
+		<p class="response">"Interesting how it's in the same table as indicRun up above..."</p>
+		<p>Yes, and it's no coincidence.  The table where these two were found is but a sample of the section of the OS called "system flags."  A more thorough listing is included in ti83plus.inc if you have a mind to look at them.  A more logical question that you may be asking is how to use these "flags?"  It involves using the Z80 instructions bit, set, and res.  To "make" it be "1 in order to write in reverse video", you use the set instruction.  Since a flag is no more than a <strong>b</strong>inary dig<strong>it</strong>, it logically follows that a "0 won't write in reverse video."  To "make" it be "0", you use the res instruction.  I won't discuss the bit instruction now, but all I can say is that it involves Z80 flags in register f (don't get these flags confused with <em>system</em> flags) and if you want to know more, you should consult some other tutorials and references. <span class="emoticon">*hint* ;)</span></p>
+
+		<p>Now how do you translate textInverse and textFlags into the set instruction (a.k.a. opcode)?  Once again you consult your references, but if you'll notice, so far I have not told you where to look for Z80 instructions.  If you delve into 83pa28d's (short for "Learn TI-83 Plus Assembly in 28 Days") Table of Contents, you'll see a section labeled "Z80 Instruction Set."  This details all the instructions that the Z80 offers and that you can use.  If you're using TASM, you can also look in tasm80.tab (and to some extent, tasmtab.htm and tasmman.htm) for a compact, but less informative listing.  The best compromise between the two would be a page filled with opcodes, such as <a href="http://www.ticalc.org/archives/files/fileinfo/128/12883.html">this one</a>.  It doesn't differ too much from 83pa28d's instruction set, other than that you can print it off without wasting a whole bunch of paper. <span class="emoticon">;)</span>  <span class="response">"Why should I use something like this?"</span>  Well, by using an opcode table/instruction set, you can, for example, find out about all the valid instructions, how big they are, how many cycles they take, how they affect the flags, etc.  For example if you scroll down to 'OR r' you will notice that in the flags column it shows: '***P00' - this tells you that the Sign, Zero and Half-Cary flags are affected if you execute this instruction.  Also, the Add/Sub and Carry flags are reset.  So if you need to reset the Carry flag for some reason (like before an SBC or ADC) you could do an OR A.  OR'ing A with itself won't change the contents of the A register, but it will reset (clear, set to "0") the Carry flag.</p>
+
+		<p>Look for an entry on the set instruction.  For example, in 83pa28d's instruction set, I see: <code>SET imm3,(regindex + ofs8)</code>.  Essentially, to set reverse-video mode, you execute:</p>
+
+<pre class="code">
+	set textInverse,(iy+textFlags)</pre>
+
+		<p>Can you see anything similar with that code and <code>SET imm3,(regindex + ofs8)</code>?</p>
+
+		<h4>Ans Variable</h4>
+		<p>In BASIC, the Ans variable is useful in that it can be anything - a string, a number, a list, a matrix, or whatever.  Often times, a hardcore BASIC optimizer will seek to use Ans as much as possible due to the belief that its access times are slightly faster than a predefined variable.  Well guess what about the Ans variable in assembly?  It's practically the same idea!  If you were a diligent reader, you might have noticed that I just introduced the concept of the <em>system variable</em>.  As it is, you need to use system calls (i.e. entry points) to more easily manipulate Ans or any other system variable.  This has already been discussed in other references (e.g. "User Variables"/"Program and System Variables" in 83pa28d and "System Variables"/"Variable Data Structures" in the SDK), so I will allude to sections of the references as appropriate.</p>
+
+		<p>Consulting your SDK reference, if you search for Ans, you will find many things, such as the tAns token, RclAns, and StoAns.  RclAns and StoAns are entry points, so if you want to find information on them, you'd usually look it up in the System Routines Documentation.  Go ahead and look up <strong>RclAns</strong>.  Got it up on your screen?  Are you sure?  If so, see if you can apply that Input/Output/Destroyed/etc. information that you looked up to the following code "that checks the type of variable that Ans is and if it is a Real variable, converts it from floating point format to an 8-bit (1 byte) value":
+
+<pre class="code">
+	B_CALL(_AnsName)	;OP1 = Ans query ready to be looked-up
+	B_CALL(_RclVarSym)	;OP1 = number in Ans
+				;because Ans always exists, no error is generated
+	ld a,(hl)		;hl points to type byte in VAT - indirectly load it into register a
+	and %00011111		;mask out the unnecessary bits 5-7 (%00011111 is binary for $1F)
+	cp RealObj		;Is it a Real number?
+	ret nz			;if so, the cp sets the z flag.  nz (not zero) means it wasn't a RealObj, and we quit
+				;We now have OP1 being the number
+	B_CALL(_ConvOP1)	;Convert floating-point OP1 to a byte value in de
+				;a is Least Significant Byte, which is all we need
+	cp 0			;Did Ans equal 0 (compare register A with decimal constant 0)?
+	jp z,TurnRIOff		;z means last operation caused some register to equal zero
+	cp 1			;Ans == 1?
+	jp z,EnableRVideo
+
+TurnRIOff:
+
+EnableRVideo:</pre>
+
+		<p class="response">"Um... okay, wtf?  Why did you make me look up RclAns when you didn't even use it?!"</p>
+		<p>It's probably a wise thing for you to learn from the start that things most likely won't go your way when you're programming something.  Often times, you'll go and look up something (e.g. RclAns), but it'll turn out that you won't even use it!  Even more common is when you execute some code and your calculator crashes due to a bug.  However, even if this happens, you can and should "be water" and try to adapt what you learned in that thing you looked up with whatever is going on in your code.  For example, when you looked up RclAns in the System Routines Documenation, the Remarks section said this:
+
+<pre class="code">
+Entire code:
+	CALL AnsName	; see these routines for more
+			; info
+	JP RclVarSym	; see these routines for more
+			; info</pre>
+
+		<p>And if you compare it to the code above, you'll see me B_CALLing these.  <span class="response">"Dude, why not just do one B_CALL and be done with it?"</span>  Well yes, it is more efficient to just do one B_CALL(_RclAns) instead of a B_CALL(_AnsName) \ B_CALL(_RclVarSym), but this illustrates that there is usually more than one way to do a certain task.</p>
+		<p>Also, as you can see, I used some new opcodes and entry points, such as AND and ConvOP1.  If you want to know how this snippet of code truly works, you need to know why I used these instructions and what they do.  <span class="response">"What are they?  Where could I find that sort of information?"</span></p>
+		<p><a href="application2.html">Continue...</a></p>
+		<p><a href="toc.html">Up to Table of Contents</a></p>
+		<div id="footer"></div>
+	</body>
+</html>

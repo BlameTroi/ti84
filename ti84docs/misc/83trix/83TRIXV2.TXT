@@ -1,0 +1,2274 @@
+
+Version 2.2
+August 2006
+
+                    TI-83 Basic Tricks & Tips
+                  (The Compleat Basic Programmer)
+
+
+  This guide is designed for TI-Basic programmers who think
+they've mastered Basic. Why is optimization important? Several
+reasons come to mind:
+
+    Often, your program will run faster.
+    Often, your program will be smaller.
+    Frequently, you will expand your knowledge of Basic.
+    Mostly, your audience will thank you, for allowing
+      them to stuff more games into their 27K of RAM.
+    Also, it's fun, in a geeky sort of way.
+
+  When I first wrote this guide, back in 2000, I had never seen
+a concise guide to the "dos and don'ts" of TI-83 programming.
+There were a couple of small tutorials floating around, but nothing
+all-inclusive. These days, with the rise of the Web forum and
+the graying of the TI-83 community, it's easier to find extensive
+documentation on various individual aspects of Basic programming,
+but rarely in an easy-to-use, indexed format. With Version 2 of
+"The Compleat Basic Programmer," I hope to remedy this problem.
+
+  This guide contains many "case studies": snippets of code and
+the occasional full-fledged program, all of which I believe to be
+bug-free. These programs are often simplified to demonstrate some
+approach more concisely, but I have taken great care to optimize
+them as I would if they were "real" programs for everyday use. I
+hope that you, the reader, can use the case studies to learn more
+about optimization than is stated explicitly in the text.
+
+  A note on syntax: The TI-83 Basic code in this guide is written
+in an ASCIIfication that closely approximates the stuff you can
+import into GraphLink. However, since this guide is meant to be
+read by humans, I've made a few changes: for example, the first
+built-in list is called L1 in this guide, not L\1\, and the unary
+minus is called -, not \(-)\.
+
+  A note on scope: I have included some non-Basic trivia in
+section 10, including what might be seen as a segue into the world
+of Z80 assembly language and a partial list of operating system
+glitches that could easily grow in size to rival the Basic sections
+of this guide. This guide is still first and foremost about how
+to optimize Basic programs; but I decided that as long as I was
+writing an all-in-one reference, I might as well include some of
+the non-Basic things I'd like to see collected in one place, too.
+  Because I'm familiar only with the original TI-83, I confine
+this guide to that calculator only; some parts may be inaccurate
+with respect to the TI-83+, Silver Edition, TI-84+, and other
+models in the TI-83 family. (For example, section 10.2 does not
+mention the TI-83+ command "Asm(", and section 1.1 does not
+mention the TI-84+ timer functions.)
+
+  Without further ado, the guide!
+
+
+TABLE OF CONTENTS
+
+1. The basics
+  1.1. Editing and profiling
+  1.2. Syntactic sugar
+2. Control flow: If, Then, For, While, Repeat
+  2.1. Modes of control flow
+  2.2. Replacing "If" with arithmetic
+  2.3. Comparison of "If:Then" and "If"
+  2.4. Loop hacks
+  2.5. Unexplained quirks of control flow
+3. Advanced control flow
+  3.1. Lbl, Goto, and Menu(
+  3.2. IS>( and DS<(
+  3.3. Comparison of "DelVar" and "0\->\"
+4. Subroutines
+  4.1. External subroutines
+  4.2. Recursion
+  4.3. Internal subroutines
+  4.4. "Gosub" with Goto and End
+  4.5. Making use of Ans
+5. Graphics
+  5.1. Bitmap sprites
+  5.2. Bitmaps using "inString("
+  5.3. Textsprites
+  5.4. Plotsprites
+  5.5. Screen scrolling with "sub("
+6. List and matrix operations
+  6.1. List equations
+  6.2. Matrix operations
+  6.3. Hunt the Wumpus dungeon generation
+  6.4. Finding poker hands
+7. Input hacks
+  7.1. Comma-separated list
+  7.2. Cheating with "Input"
+  7.3. Illegal string characters
+  7.4. The empty string
+8. Two-calculator communications
+9. Other hacks
+  9.1. Integer into string
+  9.2. Decimal into fraction
+  9.3. Shuffling a deck of cards
+  9.4. The dbd( function
+  9.5. Miscellaneous control flow hacks
+  9.6. Miscellaneous timings
+  9.7. List of single-byte tokens
+10. Non-Basic miscellany
+  10.1. Finding your ROM version
+  10.2. Hexadecimal assembly code
+  10.3. Operating system glitches
+11. References
+  11.1. Contributors
+  11.2. Web sites
+
+
+SECTION 1. The basics.
+
+SUBSECTION 1.1. Editing and profiling.
+
+  I do most of my program editing directly on the TI-83, using
+the built-in program editor; however, for large programs, I often
+find that I want an environment with faster scrolling and the
+ability to keep more than one screenful of code in view at once.
+In those cases, I turn to TI's GraphLink software, which is rather
+painful to edit large amounts of code with, but does let me scroll
+to the right part quickly, and lets me transfer the program back
+and forth between TI-83 and PC for testing.
+
+  When a program has complicated control flow, I typically export
+it into a plain text file and indent it by hand in a regular text
+editor to keep track of matching Then-End pairs.
+
+  I usually keep two copies of a work-in-progress on my calculator:
+one "stable" version and one "experimental" copy, whose name
+usually begins with A or AA to give it a shortcut in the PRGM->EXEC
+menu. At some point, then, I need to rename the experimental copy.
+This can be done in at least two ways:
+
+    Create a new program with the new title. Hit 2nd-Rcl, then
+    PRGM->EXEC and select the old program's title. Hit Enter
+    twice; the old program's text will be pasted into the new
+    program. (The old program can then be deleted.) This also
+    works to "paste" program text into the middle of existing
+    programs; the new text is always inserted, and "pushes down"
+    the text that follows it, instead of overwriting that text.
+
+    However, you may not have enough RAM to make two copies of
+    some large programs. To rename a large program, you will
+    need to transfer the program to GraphLink on a PC, change
+    its name there, and transfer it back.
+
+  Now, before I explain ways to make your programs smaller and
+more efficient, it's worth explaining how to tell whether they're
+smaller or more efficient!
+  To find out how much RAM a program takes up, press 2nd-Mem and
+select Delete, then Prgm. You'll see a list of all the programs on
+your calculator, along with their sizes in RAM. Do not press "Enter"
+at this point --- that will delete a program! Instead, press "Clear"
+to get back to the home screen.
+  A Basic program on the TI-83 takes up 6 bytes of header, plus one
+byte for each character in the name, plus however many bytes of code
+it contains. It's generally not worth obfuscating the name of the
+program to save memory; besides, if you name your program "A", it
+will conflict with the other dozen programs whose programmers had
+the same "clever" idea. Give your programs good, descriptive, unique
+names, and make up for the extra byte or two in the compactness of
+the code itself.
+
+  I know of no royal road to finding out how fast a program is.
+Intuition and good use of Stop, Disp, and the On button will give
+you some idea of the places your code is spending most of its
+time. Once you have identified a bottleneck, make a copy of the
+offending code and start changing it to see whether you can speed
+it up. There is sometimes a tradeoff between speed and size.
+  To time a piece of code, I generally just watch the "progress
+indicator" in the upper right corner of the display, and count
+how many "ticks" it takes until the code finishes; that's how
+the timings in this guide were recorded.
+  If a piece of code runs in less than one tick, then obviously
+the thing to do is run it many times together --- either by
+cutting-and-pasting the code, or by putting it in a For loop,
+or both. See sections 3.3 and 9.6 for details on the timing
+procedures in this guide.
+
+
+SUBSECTION 1.2. Syntactic sugar.
+
+  The Basic language contains a lot of "optional" elements: ones
+that aren't really needed to make your program work, and can even
+slow it down. These "optional" elements are called "syntactic
+sugar" by computer programmers, because they make the syntax
+look prettier without adding any nutritional value.
+  In general, you should trim away all the syntactic sugar you
+can. Here are all the sugar-filled areas of TI-83 Basic:
+
+    Arithmetic. Write "64" instead of "4^3".
+
+    Algebra. Write "X-Y-Z" instead of "X-(Y+Z)".
+
+    Implied multiplication. Never, ever use the * sign for
+    multiplication! Write "AB" instead of "A*B".
+      (Note that implied multiplication does not bind tighter
+    than regular multiplication and division.  1/2A is .5A,
+    and not the same as 1/(2A).)
+
+    Arithmetic instead of logic. TI-83 Basic, like C and many
+    similar programming languages, uses the values 1 and 0 for
+    "true" and "false" respectively. The value of "X>1" is 1
+    if X is greater than 1, and 0 otherwise. Thus, you can
+    write "If XY" instead of "If X and Y". (But see
+    section 9.6 for information on the relative speed of
+    multiplication.)
+
+    Remove closing parentheses, braces, and quotation marks.
+    Write "[[0,1][1,0" instead of "[[0,1][1,0]]".
+
+    The "STO>" character \->\ automatically closes quotes,
+    parentheses, brackets, and braces behind it. Write
+    "expr(Str1\->\L1(I" instead of "expr(Str1)\->\L1(I)".
+      (Note that this means it is impossible to put a "\->\"
+    character inside a string. See section 7.3.)
+
+    The colon ":" closes parentheses, brackets, and braces,
+    but NOT quotes. (Thus it is possible to put a colon inside
+    a string.)
+
+    Use the e^( key rather than e ^, the squared-sign key
+    rather than ^2, the superscript-3 character rather than
+    ^3, and the 10^( key rather than its constituent parts.
+      (These optimizations improve speed as well as size.)
+
+    The small-E exponentiation character should be substituted
+    for 10^( whenever possible. It works only with integer
+    powers. If nothing is put before the E, the interpreter
+    treats it as 1 times ten-to-the-whatever. Write "E2"
+    instead of "100", "E3" instead of "1000", and so on.
+      ("E2" is actually faster than "100" when tested inside
+    a loop, so there's no speed penalty.)
+
+    The "DelVar" command needs no colon or newline after it.
+    Write "DelVar A0\->\B" instead of "DelVarA:0\->\B".
+    (This can have side effects; see section 2.1. For more
+    on DelVar, see section 3.3.)
+
+    User-defined lists often don't need the "L". Write
+    "{1\->\A" instead of "{1\->\\L\A" to store a list into LA.
+    The value of the scalar variable A will not be affected.
+    (For more on the interchangeability of lists and scalars,
+    see section 7.2.)
+
+    Not all string characters are created equal. Many of the
+    lower-case characters accessible through the Catalog or
+    the Statistics menus, [VARS][5], really take up two bytes
+    in the calculator's RAM. Thus, while lower-case letters
+    can look nice in Basic programs, there is a cost to using
+    them: your program will take up more memory.
+      (Fewer than half the available characters and functions
+    on the TI-83 are accessible through the Catalog. Take the
+    time to browse the [VARS] menus and see what's there.)
+
+    When displaying long text messages (as in help screens),
+    there is no difference in size between
+        :Disp "HELLO
+        :Disp "WORLD
+    and
+        :Disp "HELLO","WORLD
+    This is a purely stylistic choice. I tend to prefer the
+    latter.
+      However, there is a way to save space on multi-screen
+    paused messages; write
+        :Disp "HELLO
+        :Pause "WORLD
+    instead of
+        :Disp "HELLO","WORLD
+        :Pause
+    This optimization saves two bytes, but has one side effect.
+    The optimized version also stores "WORLD" into Ans, while
+    the unoptimized version does not affect Ans.
+
+
+
+SECTION 2. Control flow.
+
+  A lot of people use Basic's control structures --- If, For,
+and so on --- without actually understanding how they work. If
+you are going to squeeze every last drop of performance out of
+your program, it is very important that you understand your
+tools.
+
+  For example, it is useful to know that Basic's "For" loop
+stores its upper bound and increment on the stack, rather than
+re-evaluating them each time. Thus, the program
+
+    :10\->\B:5\->\C
+    :For(A,1,B,C
+    :2\->\B
+    :-1\->\C
+    :Disp {A,B,C
+    :End
+
+loops over the "Disp" command only twice before exiting. (See
+section 3.2 for the same advice about "IS>(".) This also means
+that to loop exactly N times, one can write
+
+    :For(N,1,N
+    :Disp N
+    :End
+
+The upper bound is evaluated only once, before N is set to 1
+for the first iteration of the loop.
+
+
+SUBSECTION 2.1. Modes of control flow.
+
+  The TI-83 Basic interpreter has at least three distinct
+"modes" in which it moves around in your program's code. I will
+call these modes "execution," "skipping," and "jumping."
+
+  The "execution" mode is the ordinary one, in which the
+instruction pointer moves forward over the code, one token at
+a time, executing whatever code it finds. Suppose it finds the
+command "If 0:Then". Since the condition is false, the
+interpreter will change modes --- it will enter "skipping" mode.
+
+  In "skipping" mode, the interpreter skips down the program's
+listing, line by line (where a "line" is begun with a colon),
+until it finds a line beginning with the token it's looking
+for (which may be "Else", "End", or "Lbl", depending on the
+context). As soon as it finds that token, it returns to execution
+mode.
+  It's very important to realize that if the token is in the
+middle of a line, the interpreter will skip right over it!
+
+  Suppose the interpreter is in the middle of executing a "For"
+loop. When it sees the terminating "End", it will evaluate the
+loop condition, and, if the loop should continue, it will enter
+the third mode: "jumping" mode. In this mode, no tokens are
+actually parsed --- the instruction pointer simply jumps forward
+or backward in the code to a location it had stored (on a stack)
+when it executed the "For" command.
+  "Jumping" mode is only used by "For", "While", and "Repeat"
+commands. "Goto", "IS>(", and "DS<(" all use "skipping" mode.
+
+  You can figure out whether control flow is in "jumping" or
+"skipping" mode by seeing how the program reacts when you insert
+"DelVar X" (or any variable) immediately before the control
+structure's target. (See section 1.2.)
+
+    :DelVar XLbl A
+    :Goto B
+    :Disp "JUMPING
+    :Lbl B
+    :Goto A
+    :Lbl A
+    :Disp "SKIPPING
+
+This program displays "SKIPPING", proving that the interpreter
+doesn't remember the location of the "Lbl A" in line 1, which
+it encountered while in execution mode. Instead of jumping right
+back to that label, it searches from the top of the program,
+looking for a line that begins with "Lbl A". The DelVar hides
+the "Lbl A" on line 1 from the interpreter's skipping mode.
+
+
+SUBSECTION 2.2. Replacing "If" with arithmetic.
+
+  Increments and decrements with simple conditionals don't need
+the "If" command. Instead of
+
+    :If A=15:B+1\->\B
+
+write
+
+    :B+(A=15\->\B
+
+and the program will be two bytes shorter and run faster. This
+idiom leads to a common snippet, illustrated as part of the
+following program that moves an "X" around the home screen until
+the user presses "Clear":
+
+    :DelVar K4\->\A:8\->\B
+    :Repeat K=45
+    :Output(A,B,"_
+    :A-(K=25 and A>1)+(K=34 and A<8\->\A
+    :B-(K=24 and B>1)+(K=26 and B<16\->\B
+    :Output(A,B,"X
+    :Repeat Ans:getKey\->\K:End
+    :End
+
+(The "_" on line 3 indicates a space.)
+
+
+SUBSECTION 2.3. Comparison of "If:Then" and "If".
+
+  Every programmer should know that it is possible to write
+
+    :If X
+    :Disp "XYZZY
+
+instead of the more verbose
+
+    :If X:Then
+    :Disp "XYZZY
+    :End
+
+It should not surprise you to learn that the former program,
+being shorter, runs faster when the condition X is true.
+However, it may surprise you that the former program takes much
+longer to execute than the latter when X is false!
+
+  "If X:Y" takes much longer than "If X:Then:Y:End" when the body
+is skipped; it takes a little less time when the body is not
+skipped.
+
+
+SUBSECTION 2.4. Loop hacks.
+
+  Reversing the sense of a loop test can save space. For example,
+write
+
+    :Repeat Q
+    :getKey=105\->\Q
+    ...
+    :End
+
+instead of
+
+    :0\->\Q
+    :While not(Q
+    :getKey=105\->\Q
+    ...
+    :End
+
+This optimization illustrates the two differences between "While"
+and "Repeat": the first is that their conditions have opposite
+semantics ("while true" versus "repeat until true"), and the
+second is that the "Repeat" loop always executes its body at
+least once.
+
+  To save one byte of storage, replace
+
+    :For(I,9,0,-1
+    :Horizontal I
+    :End
+
+with the reversed loop
+
+    :For(I,0,9
+    :Horizontal 9-I
+    :End
+
+  It is also possible to condense If structures with loops. For
+example, we save six bytes by replacing the somewhat unlikely
+construction
+
+    :If not(B:Then
+    :For(I,1,E2
+    :Horizontal I
+    :End:End
+
+with
+
+    :For(I,1,E2not(B
+    :Horizontal I
+    :End
+
+
+SUBSECTION 2.5. Unexplained quirks of control flow.
+
+  There is at least one quirk of TI-83 Basic's control structures
+that I don't fully understand. It involves "For" loops that contain
+only "skipping" instructions --- by which I mean If without Then;
+IS>(; and DS<(. The simplest example is probably
+
+    :For(A,1,1000
+    :If 0:0
+    :End
+
+This program takes 25 ticks to run to completion. But if a right
+parenthesis is added after the "1000", the modified program --- one
+byte longer, and semantically equivalent --- runs in only 8 ticks!
+Or, the loop can be changed to include more than just a skipping
+command:
+
+    :For(A,1,1000
+    :X
+    :If 0:0
+    :End
+
+The program above runs in 11 ticks. It makes no difference which
+side of the "If" you put the "X".
+
+  This effect seems to occur no matter whether the "skip" is taken
+or not; "If 1" or "If 0", it's all the same.
+
+  Obviously, this has implications for using For loops to time
+complicated code snippets! If you repeat an "If" inside a For loop,
+but omit the closing parenthesis on the For command, you might wind
+up thinking that the command takes much longer than it really does.
+(I ran into this problem in an earlier version of this guide, trying
+to analyze "If pxl-Test(0,0:0" versus "pxl-Test(0,0:If Ans:0". It
+turns out that both commands run about equally quickly, the latter
+a little more slowly; but dumped into a parenthesis-less For loop,
+the former takes much, much longer due to the For-loop effect alone.)
+
+
+SECTION 3. Advanced control flow.
+
+  This section deals with the less commonly used built-in control
+structures of TI-83 Basic, such as Goto and IS>(.
+
+
+SUBSECTION 3.1. Lbl, Goto, and Menu(.
+
+  As mentioned in section 2.1, the "Goto" command uses "skipping"
+mode to search for its target "Lbl". It always searches the program
+from top to bottom, so earlier "Lbl" commands will be found first.
+(Duplicate "Lbl" commands are useless.)
+  The "Menu(" command also uses "skipping" mode, also searching
+from top to bottom. Control flowing out of a menu behaves exactly
+the same as control flowing out of a Goto.
+
+
+SUBSECTION 3.2. IS>( and DS<(
+
+  The "increment and skip if greater" and "decrement and skip if
+lesser" commands are extremely rarely used, for several reasons.
+The main reason is that they're obscurely named and buried at the
+bottom of the program menu; but one might be excused for thinking
+that they must be pretty efficient, or else why devote special
+commands to them?
+  One would be wrong. IS>( and DS<( are slow compared to the more
+verbose combination of "\->\" and "If". Almost three times as slow,
+in fact. So their disuse is justified --- never use IS>( or DS<(
+for their intended purpose if speed is what you want!
+
+  However, the commands are sometimes smaller. You can save one
+byte by replacing
+
+    :A-1\->\A
+
+with
+
+    :DS<(A,0
+
+as long as A is guaranteed to remain non-negative (meaning the
+jump never happens); and you can save four bytes by replacing
+
+    :A+1\->\A
+    :If 0:End
+
+with
+
+    :IS>(A,A:End
+
+This optimization illustrates one of the amusing properties of
+the increment operators: Like "For", they evaluate their second
+parameter before performing the increment. Therefore, "IS>(A,A)"
+will always jump, and so will "DS<(A,A)".
+
+  Even more oddly, the increment operators check their first
+parameter for existence before evaluating (and thereby bringing
+into existence) their second. Whereas
+
+    :DelVar A0\->\B
+    :IS>(B,A:End
+
+runs without complaint (because B exists),
+
+    :DelVar A0\->\B
+    :IS>(A,B:End
+
+produces "ERR:UNDEFINED"! (See also section 3.3.)
+
+  If the effect of the jump would be to run off the end of the
+program (for example, if the ":End" were removed from the first
+program above), the result will be "ERR:SYNTAX", whether or not
+the jump is actually taken.
+
+
+SUBSECTION 3.3. Comparison of "DelVar" and "0\->\".
+
+  In the first version of this guide, I recommended the use of
+"DelVar A" over "0\->\A" in all cases; since then, my position
+has picked up a few nuances. The two-byte "DelVar" command is
+often no smaller than "0\->\"; it is often slower; and it has
+pitfalls for the unwary. Still, it has its place in optimization.
+
+  The DelVar command is sometimes smaller. As mentioned in
+section 1.2, the "DelVar" command doesn't need a terminating
+newline or colon, so we can replace
+
+    :0\->\A:0\->\B:0\->\C
+
+with
+
+    :DelVar ADelVar B0\->\C
+
+The latter program is two bytes smaller than the former.
+
+  The DelVar command is sometimes faster, sometimes slower. Its
+behavior is practically the opposite of "0\->\" --- if variable
+A does already exist, then "0\->\A" simply stores a value, while
+"DelVar A" performs garbage collection, which takes a long time.
+But if variable A does not exist, then "0\->\A" performs memory
+management, while "DelVar A" does nothing.
+  I haven't figured out how to get exact timings for the two
+"interesting" cases, but the following table may be helpful:
+
+    We use the program          Let
+                                   W := DelVar, variable exists
+    :For(A,1,800                   X := DelVar, does not exist
+    <code here>                    Y := 0\->\, exists
+    :End                           Z := 0\->\, does not exist
+
+    with various code snippets, as indicated. We observe the
+    following timings, in seconds, and using "H" to indicate
+    the overhead of the For loop:
+
+          X+H = 4       Z+W+Y+H = 22
+          Y+H = 6       Z+X+W+H = 21
+        Z+W+H = 19
+
+    Solving the system (and fudging for measurement error)
+    gives us X = 1.5, Y = 3, W+Z = 16. Therefore, "DelVar"
+    when the variable already does not exist is twice as fast
+    as "0\->\" when the variable already exists; and at least
+    one of the other two possibilities is at least 2.5 times
+    worse than that, but we can't tell which.
+
+
+  Finally, there are some pitfalls to using DelVar. In most
+contexts, if you try to evaluate a non-existent scalar variable
+on the TI-83, it will be silently created and initialized to
+zero. For example:
+
+    :DelVar A
+    :Disp A
+
+prints "0". However, there are some exceptions to this rule
+which can trip up the unwary programmer who relies on DelVar
+to clear variables:
+
+    The "For" command expects its counter variable to exist
+    each time the loop's "End" is reached.
+
+    The "IS>(" and "DS<(" commands expect their first parameter
+    to exist. (See section 3.2.)
+
+
+SUBSECTION 3.4. Comparison of "DelVar" and "ClrList".
+
+  The TI-83 also provides a command called "ClrList", accessible
+via the Catalog. "ClrList L1" behaves like "0\->\dim(L1", except
+that it also detaches any formula that had been attached to L1.
+(As detailed in section 6.1, "0\->\dim(L1" has no effect if L1
+is pinned to a formula.)
+  As with "0\->\dim(L1", ClrList doesn't completely delete the
+list. It leaves behind a useless zero-element list, which takes
+up 9 bytes in RAM.
+  ClrList requires a real list name; "ClrList A" is a syntax error,
+not a synonym for "ClrList \L\A". (See section 7.2.) ClrList
+takes one byte fewer than DelVar, although that advantage goes
+away if the colon after DelVar is removed. All in all, I find
+there is no reason to prefer ClrList --- use DelVar instead.
+
+
+SECTION 4. Subroutines.
+
+  One of the most important ways modern programming differs from
+programming as it was in the long-distant past is that modern
+programmers make a lot of use of subroutines; that is, smaller
+programs that fit together to make up a coherent whole.
+  For example, if I were writing a poker game, I would need to
+display a lot of cards to the screen. I could write down some
+code to display one card, and then cut-and-paste it into every
+situation in which I needed a card displayed; but that would be
+tiresome, and it would also bloat the program with a lot of
+duplicated code. A better solution is to write the code only once,
+and then package it as a subroutine using one of the following
+three methods.
+  These methods all have different advantages and disadvantages,
+which I will try to make clear. Which method you choose will
+depend on your particular circumstances.
+
+  Before getting into the details of implementing subroutines,
+let's stop to consider your options when it comes to temporary
+storage. Subprograms, especially external ones, are often in
+need of temporary variables that are "safe" (that contain no
+data from the main program). For reasonably safe variables, try:
+
+    The italic \n\, on the independent-variable key.
+    delta-X and -Y, and XFactor/YFactor (and other window- and
+      zoom-menu variables).
+    Theta is a good counter variable for loops.
+    X and Y. These two variables are overwritten by some graphing
+      commands, including "ClrDraw" and many operations
+      involving Y-vars (Y1, Y2,...). Thus, the user should
+      never expect that a program won't overwrite these
+      variables, and you should feel free to use them ---
+      except when you're trying to use graphing commands too!
+    You can create a new user-defined list, such as \L\A or
+      \L\MYPRG, and use the list elements as temporary storage.
+      Many calculator RPGs store status information in a list,
+      and some games keep a high-score list on the calculator
+      this way even when the game itself isn't running.
+    Ans. See section 4.5.
+
+
+SUBSECTION 4.1. External subroutines.
+
+  "External subroutines" are the simplest kind of subroutine:
+separate programs that are called from within the main program.
+To call another program, use its name; to return from a called
+program, execute a "Return" command or simply "fall off the
+bottom" of the program. Here's an example, using code from
+sections 2.2 and 5.2 to let the user manipulate a smiley-face
+sprite on the graphics screen:
+
+    prgmMANIP
+    :10\->\A:Ans\->\B
+    :Repeat K=45
+    :A-2(K=25)+2(K=34\->\A
+    :B-2(K=24)+2(K=26\->\B
+    :prgmZSMILEY
+    :Repeat Ans:getKey\->\K:End
+    :prgmZSMILEY
+    :End
+
+    prgmZSMILEY
+    :"101000000100010111\->\Str1
+    :1
+    :While Ans
+    :Pxl-Change(A+int(.2Ans),B+5fPart(.2Ans
+    :inString(Str1,"1",Ans+1
+    :End
+    :Return
+
+The external subroutine prgmZSMILEY draws the sprite on the
+screen, and prgmMANIP calls that subroutine twice: once to draw
+the sprite and once to erase it.
+
+  You can pass information to external subroutines in essentially
+two different ways. In that example, we passed the player's X and
+Y coordinates in the variables A and B, so variables are one way
+to pass information --- and certainly the most common! However,
+we can also pass information in the "Ans" pseudo-variable. This
+usually costs some extra space in the subroutine, but it can save
+some space and time in the calling program: we can write
+
+    :0:prgmZHELPER
+
+instead of
+
+    :0\->\A:prgmZHELPER
+
+Whole lists of parameters can be passed in "Ans", too:
+
+    :{1,2,3,4,5:prgmZHELPER
+
+
+SUBSECTION 4.2. Recursion.
+
+  The next logical step from the last section is to ask, "Well,
+if we can call other programs from within our main program, can
+we also call our main program itself?" The answer is "yes,"
+TI-83 Basic programs can make use of recursion.
+
+  It is generally a bad idea to try to use unbounded recursion
+in Basic, because your programs will run out of memory. For
+example,
+
+    prgmBADIDEA
+    :Disp "GUESS MY NUMBER
+    :Prompt P
+    :"LOSE!
+    :If P=7:"WIN!
+    :Disp "YOU "+Ans
+    :Input "PLAY AGAIN? ", Str0
+    :If "Y"=sub(Str0,1,1
+    :prgmBADIDEA
+
+If you play this game long enough, it will crash with the message
+"ERR:MEMORY". It runs out of memory because each recursive call
+opens a new "stack frame," a hidden data structure in the
+calculator's RAM that costs approximately 16 bytes. If your
+calculator has 1600 bytes of free RAM, you won't be able to
+answer "Y" to prgmBADIDEA's prompt more than 100 times before
+seeing a memory error.
+
+  This is why unbounded recursion is a bad idea. However, if you
+can ensure that your program never recurses more than once or
+twice before returning and closing the open stack frames, you
+will find recursion a very useful tool. See, for example, the
+very next part of this guide: section 4.3.
+
+  As a side note to the above, it is generally good practice never
+to use the "Stop" command. If you can manipulate the program so
+that a normal termination is a "fall off the end", good for you;
+you saved two bytes. If not, use the "Return" command instead of
+"Stop", as it helps if you later want to execute the program from
+a shell.
+
+
+SUBSECTION 4.3. Internal subroutines.
+
+  Consider the following reworking of prgmMANIP from
+section 4.1.
+
+    prgmMANIPR
+    :If \pi\=Ans:Then
+    :"101000000100010111\->\Str1:1
+    :While Ans
+    :Pxl-Change(A+int(.2Ans),B+5fPart(.2Ans
+    :inString(Str1,"1",Ans+1
+    :End
+    :Return
+    :End
+    :10\->\A:Ans\->\B
+    :Repeat K=45
+    :A-2(K=25)+2(K=34\->\A
+    :B-2(K=24)+2(K=26\->\B
+    :\pi\:prgmMANIPR
+    :Repeat Ans:getKey\->\K:End
+    :\pi\:prgmMANIPR
+    :End
+
+The external subroutine prgmZSMILEY has been tacked onto the
+front of the main program, and shielded from it by the lines
+
+    :If \pi\=Ans:Then
+    ...
+    :End
+
+Notice that whenever prgmMANIPR recursively calls itself, it
+sets Ans equal to pi; however, it's unlikely that the user
+would set Ans to pi before running the program. (And even if
+he did that once by accident, the program would just draw one
+smiley and then stop; if he ran the program again from that
+point, it would work normally again. If you use internal
+subroutines, it's a good idea to tell your users that, in
+a README file, so they don't get confused this way.)
+
+  Now, some caveats: If we try running
+
+    :{1,2,3:prgmMANIPR
+
+the program tries to compare a list to a scalar and then branch
+on the resulting list, which isn't meaningful in Basic. So we see
+"ERR:DATA TYPE" and the program crashes. This is more problematic!
+We can fix this little glitch by changing the first line to
+
+    :If \pi\=Ans(1:Then
+
+If "Ans" is a list, then "Ans(1)" is the first element of that
+list. If "Ans" is a scalar, then "Ans(1)" is simply "Ans" times
+the constant 1. Either way, the result is a scalar, and the
+expression type-checks. Again, we're relying on the assumption
+that the user won't be calculating with pi right before running
+our program.
+
+  I know of no general-purpose expression that will handle not
+only lists and scalars, but strings and matrices too. Therefore,
+internal subroutines are very fragile and should be used with
+care.
+
+  The major advantage of internal subroutines is that the whole
+program resides in a single file. Therefore, the user's program
+menu isn't cluttered, and only one file needs to be transferred
+in order to give the program to someone else.
+
+
+SUBSECTION 4.4. "Gosub" with Goto and End.
+
+  Most computer Basic languages have a command named "Gosub"
+which acts like calling an external subroutine in TI-83 Basic,
+but instead of jumping to the top of some other program, jumps
+to a label within the main program itself. Returning from the
+internal subroutine (via the command "Return", naturally) returns
+the instruction pointer to the line following the original "Gosub".
+
+  TI-83 Basic isn't that sophisticated. However, we can use what
+it provides to simulate "Gosub" in at least two ways, besides
+the simplistic "internal subroutine" method of section 4.3.
+
+  First, if our subroutine is called from only a few places
+(which is generally the case), we can write something as simple
+as
+
+    :Disp "MAIN PROGRAM
+    :0\->\T:Goto S
+    :Lbl 0
+    :Disp "MAIN AGAIN
+    :1\->\T:Goto S
+    :Lbl 1
+    :Disp "BACK IN MAIN
+    :Stop
+    :Lbl S
+    :Disp "IN SUBROUTINE
+    :If T:Goto 1
+    :Goto 0
+
+This is simple, and since it doesn't use any control structures
+except Lbl and Goto, it's easy to "plug into" any existing
+program without lots of confusion about which "End" matches up
+to which "If".
+
+  That method is perfectly satisfactory for all practical
+purposes. However, let's consider an impractical purpose: Suppose
+we want to call our internal subroutine from more than 1406
+places in the program! (1406 is 37+37*37, the number of labels
+available in Basic. Labels can be composed of one or two
+characters, and those characters can be A-Z, 0-9, or \theta\.)
+  In that case, we must fall back on a less-than-elegant control
+flow hack.
+
+    :Disp "MAIN PROGRAM
+    :For(L,-1,0:If L:Goto S:End
+    :Disp "MAIN AGAIN
+    :For(L,-1,0:If L:Goto S:End
+    :Disp "BACK IN MAIN
+    :Stop
+    :Lbl S
+    :Disp "IN SUBROUTINE
+    :End
+    :Disp "N.B.
+
+When we want to call the subroutine, we invoke a "For" loop,
+which executes exactly twice. (The subroutine had better not
+modify L!) On the first iteration, we "Goto" the subroutine,
+and at the end of the subroutine encounter the "End" that
+sends us back to the top of the loop where we began. The
+second iteration of the loop does nothing, and at the end of
+that iteration we drop out of the bottom of the loop and
+continue executing in the main program.
+  (Just one iteration of the "For" loop wouldn't be enough;
+we'd drop out of the loop at the location marked "N.B." in the
+program. For the same reason, we can't simply use a "Repeat 1"
+loop, or "While F" where the subroutine sets F to zero, or any
+similar such trick --- they all fail to return to the right
+location in the main program.)
+
+  Perhaps surprisingly, the two methods take exactly the same
+amount of memory --- the "labels" method actually takes more, if
+two-character labels are involved! And the "for-loop" method
+should generally be more efficient, since its return journey
+is taken in "jumping" mode instead of "skipping" mode. Thus,
+the "for-loop" method may be preferable in many cases.
+  However, there is a major pitfall with the "for-loop" method!
+Once the loop has been started, there's no way to get that "End"
+off the interpreter's stack. Therefore, the following program
+has a bug.
+
+    prgmSUBBUG
+    :While 1
+    :Lbl C
+    :Disp "ENTER A NUMBER
+    :For(L,-1,0:If L:Goto S:End
+    :Ans\->\A
+    :Disp "ANOTHER NUMBER
+    :For(L,-1,0:If L:Goto S:End
+    :Ans\->\B
+    :" NOT_
+    :If A=B:"_
+    :Disp "YOUR NUMBERS","ARE"+Ans+"EQUAL
+    :End
+    :Stop
+    :Lbl S
+    :Prompt N:N
+    :If Ans\>=\0:End
+    :Disp "NO NEGATIVE","NUMBERS PLEASE
+    :Goto C
+
+The programmer intends "Goto C" to send the control flow back to
+the top of the main loop, and it does --- but the interpreter is
+still looking for an "End" to end the "For" loop that called the
+subroutine! Therefore, the next time the program encounters the
+"End" that normally matches the main loop's "While 1", it assumes
+that's the end of the "For" loop and continues on its way. The
+next command is a "Stop", and the program terminates.
+
+  The sensible solution is to avoid using the "for-loop" method
+with complicated control flows. But a solution to this particular
+problem is fairly simple.
+
+    prgmSUBFIXED
+    :While 1
+    :Lbl C
+    :Disp "ENTER A NUMBER
+    :For(L,-1,0:If L:Goto S:End
+    :Ans\->\A
+    :Disp "ANOTHER NUMBER
+    :For(L,-1,0:If L:Goto S:End
+    :Ans\->\B
+    :" NOT_
+    :If A=B:"_
+    :Disp "YOUR NUMBERS","ARE"+Ans+"EQUAL
+    :End
+    :Stop
+    :Lbl S
+    :Prompt N:N
+    :If Ans<0:0\->\L
+    :End
+    :Disp "NO NEGATIVE","NUMBERS PLEASE
+    :Goto C
+
+The fixed subroutine increments the loop control variable L
+so that if the input number was negative, the subroutine's
+"End" causes control flow to fall out the bottom into the
+"No negative numbers please" message. At that point, the "For"
+loop's address is cleared off the interpreter's stack, and
+the program behaves as it's supposed to.
+
+
+SUBSECTION 4.5. Making use of Ans.
+
+  The special variable Ans can really speed up a program if used
+properly.  Storing to Ans is done just like on the home screen;
+quote the value directly and it's automatically stored to Ans.
+Normal stores also store to Ans, so the getKey loop
+
+    :Repeat K:getKey\->\K:End
+
+can be replaced with
+
+    :Repeat Ans:getKey\->\K:End
+
+I find the latter more aesthetically pleasing, although both
+snippets have the same size and execution time.
+
+  By judicious use of a list stored in "Ans" and parallel list
+operations, an entire program can be created that uses no
+permanent data space whatsoever. For example, consider the
+following pi-calculating program, which expects the number of
+iterations to be provided in "Ans":
+
+    prgmPI1
+    :DelVar S
+    :For(L,1,Ans
+    :S+1/(4L-3\->\S
+    :S-1/(4L-1\->\S
+    :End
+    :Disp 4S
+
+It can be rewritten without any variables by letting the first
+and second elements of the new "Ans" list stand for L and S,
+respectively, and counting down with L instead of up:
+
+    prgmPI2
+    :{Ans,0
+    :While Ans(1
+    :{Ans(1)-1,(4Ans(1)-3)\^-1\-(4Ans(1)-1)\^-1\+Ans(2
+    :End
+    :Disp 4Ans(2
+
+The resulting program uses no variables (and hence erases none
+of the user's own data). Readability does suffer, however, and
+programs may be slightly longer or even slower with this
+particular optimization; there is a tradeoff between
+preserving the user's data and running efficiently. (prgmPI1
+takes 16 ticks to do 400 iterations; prgmPI2 takes 18. prgmPI2
+is also 11 bytes longer.)
+
+  Conversely, to store the result of an expression R into the
+variable X without affecting the user's value of Ans, you can
+use
+
+    :For(X,R,0
+    :End
+
+if R is greater than zero, or repeat the expression if R may
+take any value:
+
+    :For(X,R,R-1
+    :End
+
+
+SECTION 5. Graphics.
+
+  Many Basic programs make use of the graphics screen, and make
+use of it poorly. However, there's no reason a well-written Basic
+program can't do graphics as well as a program written in assembly.
+
+  Efficiency starts with the right setup. Generally, any program
+that uses graphics will start with the lines
+
+    :0\->\Xmin:1\->\\DeltaX\
+    :-62\->\Ymin:1\->\DeltaY\
+    :AxesOff:FnOff :PlotsOff
+
+(\DeltaX\ and \DeltaY\ are found in the Window menu, [VARS][1].) The
+command "GridOff" may also be desired, but I don't put it in my
+own programs, since I've never had any reason to turn the grid on
+in the first place.
+  Once these commands have been executed, the point (X,Y) in the
+calculator's coordinates will correspond exactly to the pixel
+(-Y,X) on the screen. Therefore, the program can mix and match
+coordinate-relative commands such as "Pt-On" and "Line" with
+screen-relative commands such as "Pxl-On" and "Text".
+
+  Whenever possible, use the "Horizontal" and "Vertical" commands
+instead of "Line"; they are faster and shorter. Unfortunately, while
+"Line(A,B,C,D,0)" erases the given line, there is no such "erase"
+feature for "Horizontal" or "Vertical".
+
+  The most efficient way of getting dark pixels onto the screen
+is almost always to use "Text(". See section 5.3 for an
+elaboration on this theme.
+
+  The next three subsections deal with "sprites," the graphics
+term for little bitmapped pictures that don't change shape, but
+move around the screen or appear and disappear in different
+places. Sprites are a big part of many games, in Basic and in
+assembly.
+
+
+SUBSECTION 5.1. Bitmap sprites.
+
+  The following program draws a Tetris block on the screen, using
+the "box" feature of Pt-On. The block is represented by a bitmap
+--- literally, the bits of the integer B correspond to the boxes
+that appear on the screen.
+
+    :402\->\B
+    :ClrDraw
+    :For(I,1,3
+    :For(J,1,3
+    :.5int(Ans
+    :If fPart(Ans:Pt-On(20-3J,3I-20,2
+    :End
+    :End
+
+In this example, 402 decimal is 110010010 binary, so the block
+that appears on the screen is shaped like this:
+
+    11.
+    .1.
+    .1.
+
+If this example isn't clear yet, try different values for B, and
+see how the bitmap changes. For example, B=341, or 101010101 binary,
+yields an "X".
+
+  Bitmap sprites are versatile --- the TI-83's floating-point
+numbers can store up to 43 bits without losing precision, which
+means you can have bitmaps that are 6 pixels by 7 pixels! If
+you're dealing with bitmaps that big, though, you will probably
+find the following program useful:
+
+    prgmBITCNVT
+    :Disp "ENTER BITMAP
+    :Input "> ",Str0
+    :0:For(A,1,length(Str0
+    :2Ans+expr(sub(Str0,A,1
+    :End
+    :Disp Ans
+
+
+  The main problem with bitmap sprites is that they're very slow
+to display. No matter whether you use Pt-On or Pxl-On (or Line
+or Text) to turn on the pixels, you still have to loop over the
+bitmap, dividing by 2 at each iteration, and that takes time.
+
+
+SUBSECTION 5.2. Bitmaps using "inString(".
+
+  "Axcho" describes an interesting variation on the bitmap theme
+that doesn't require so many explicit loops:
+
+    :"110010010\->\Str1
+    :ClrDraw
+    :inString(Str1,"1",1
+    :While Ans
+    :Pt-On(20+9fPart(Ans/3),-20-3int(Ans/3),2
+    :inString(Str1,"1",Ans+1
+    :End
+
+Here, the "While" loop only iterates four times, once for each
+of the 1 bits in the bitmap. The other five of the original
+bitmap code's loops are done inside the "inString" function.
+
+  The problem with this method is that it must do extra
+calculation to figure out where to plot each point --- the
+"fPart" and "int" expressions are not cheap. Therefore, while
+the running time of the original code was dominated by the
+loop overhead, this code's running time gets worse and worse
+as more "on" pixels are added to the sprite.
+  For 3x3 sprites, the two methods perform approximately the
+same when the sprite has three "on" pixels; the string-based
+method is better for one or two pixels and worse for more.
+  For 5x5 sprites, the two methods perform approximately the
+same when the sprite has eight or nine "on" pixels.
+
+
+SUBSECTION 5.3. Textsprites.
+
+  (The name "textsprites" is due to "Axcho".)
+
+  As mentioned before, the most efficient way of getting dark
+pixels onto the screen is generally to use "Text(". Therefore,
+it makes sense to look for a way of encoding arbitrary bitmaps
+in "Text(" commands. Textsprites is just such a method.
+  Consider the following program to draw a user-specified
+suit symbol (diamonds, hearts, clubs, or spades) on the graph
+screen:
+
+    :Prompt S
+    :"-:):-  "
+    :If not(S:"'\^2\S\^2\'  "
+    :If S=1:"eQ[Qe  "
+    :If S=2:"e([(e  "
+    :ClrDraw
+    :For(A,1,length(Ans
+    :Text(1,1+A,sub(Ans,A,1
+    :End
+
+Each of the characters in the "Ans" string encodes a vertical
+bar of five pixels. Thus, any 5-by-N sprite can be encoded in
+just N characters, and drawn with lightning speed, as long as
+there exist characters with the right pixels along their
+right-hand margins.
+
+  The following table is a complete listing of characters on the
+TI-83, indexed by textsprites value:
+
+    00000 (space) \-\ \^3root\ \dot\
+    00001 . ,
+    00010 \cross\ \sqrt\
+    00011 / J \DeltaX\
+    00100 { < - + \^-1\
+    00101
+    00110 a c d e \sigma-x\
+    00111 \box\
+    01000 ^ \pi\
+    01001 S 1 z \<=\ \n\ gcd(
+    01010 : * = \!=\
+    01011
+    01100 v \degrees\
+    01101 s
+    01110 ( C G 0 \theta\ w
+    01111 A 6 10^( n p \p-hat\ r u \L\ min( fpart(
+    10000 T ? ln( \^T\
+    10001 ) ] } > I 3 \Sigma-x\
+    10010 \^2\ \^3\
+    10011 Z 2 7
+    10100 \^xroot\
+    10101 \xbar\ \ybar\ \>=\
+    10110
+    10111 i invNorm(
+    11000 Y
+    11001
+    11010 \chi^2\
+    11011 X
+    11100 ' V 4 "
+    11101 ! 5 9
+    11110 Q t \^r\
+    11111 [ B E F H K L M N O P R U W 8 b \E\ \>Dec\ \F\ \N\
+
+Notice that four rows are empty. (The 00101, 10110, and 11001 are
+filled in by c-cedilla, e-grave, and I-circumflex, respectively,
+on the TI-83+, but even on the TI-83+ there is reportedly no way
+to achieve 01011.) To obtain those columns of pixels, you would
+have to supplement the normal textsprites routine with a few calls
+to Pxl-On or Pxl-Off.
+
+  Besides the unobtainable pixel columns, another disadvantage
+of the textsprites method is that it requires one or two
+(for 11010, as many as seven!) "scratch" columns to the right
+of the sprite, which will get overwritten with garbage and then
+erased with spaces when the sprite is completely drawn. One way
+to use textsprites in "close quarters" without having the garbage
+overwrite important screen data is to use StorePic:
+
+    prgmTSPIC
+    :ClrDraw
+    :Pxl-On(1,1:Pxl-On(1,7
+    :Pxl-On(7,1:Pxl-On(7,7
+    :StorePic 1
+    :"-:):-  "
+    :For(A,1,length(Ans
+    :Text(1,1+A,sub(Ans,A,1
+    :End
+    :RecallPic 1
+
+Try the above program with and without the RecallPic command.
+Without RecallPic, one of the pixels around the diamond sprite
+is erased by the sprite's garbage columns and never redrawn.
+Recalling the saved picture redraws the missing pixels correctly.
+
+
+SUBSECTION 5.4. Plotsprites.
+
+  Another method of displaying sprites is to put the coordinates
+of the sprite's pixels in a couple of lists, and set up a
+scatterplot of them. Drawing the scatterplot will draw the
+sprite; and, conveniently, the TI-83 automatically redraws
+scatterplots when any change is made to the graph screen.
+  Examine the following program, which uses complex arithmetic
+to move and spin a "spaceship" sprite on the screen. The complex
+number J represents the ship's offset, and the integer R
+represents its rotation in quarter-turns. The sprite's ten pixels
+are stored in the complex list L1, and pulled into the real lists
+L2 and L3 when it's time to update the sprite.
+
+    prgmPLOTSPRT
+    :{-2-2i,-2i,2-2i,-1-i,1-i,-1,1,-1+i,1+i,2i\->\L1
+    :Plot1(Scatter,L2,L3,\dot\
+    :47\->\Xmax:-Ans\->\Xmin
+    :31\->\Ymax:-Ans\->\Ymin
+    :AxesOff:ClrDraw
+    :DelVar J0\->\R
+    :Repeat K=45
+    :real(2J+i^RL1\->\L2
+    :imag(2J+i^RL1\->\L3
+    :Pt-Off(E7,0
+    :Repeat Ans:getKey\->\K:End
+    :i(K=25)-i(K=34)+(K=26)-(K=24
+    :J+i^RAns\->\J
+    :R+(K=21\->\R
+    :End
+
+  Plotsprites are generally very slow, but might be more
+convenient than the alternatives in some cases. Their other
+major disadvantage is that any use of plotsprites necessarily
+overwrites at least one stat plot and at least two lists.
+
+
+SUBSECTION 5.5. Screen scrolling with "sub(".
+
+  (This method is due to Basicoderz. They used it to great effect in
+the side-scrolling bomber game WAR2.)
+
+    prgmSUBSCROL
+    :"THIS IS A TEST_
+    :Ans+Ans+Ans
+    :Ans+Ans\->\Str1
+    :1\->\I
+    :While 1
+    :I+1-80(I=80\->\I
+    :Output(1,1,sub(Str1,1+int(.5Ans),16)+sub(Str1,1+int(Ans/3),16
+    :End
+
+
+SECTION 6. List and matrix operations.
+
+  Existing lists and matrices get truncated when the program
+stores into an expression involving "dim("; non-existing
+structures get created and zeroed automatically. Therefore,
+explicit zeroing of most structures is unnecessary.
+  However, note that resizing a matrix by assigning to "dim("
+takes much longer than simply assigning values to an existing
+matrix, and garbage-collecting an existing matrix takes about
+as long as the "Fill(" command. The best way to resize and
+zero a matrix which may or may not already exist is therefore
+to delete and reallocate it:
+
+    For iters  Reps  Code                        Ticks    Bytes
+    800        1     DelVar [A]{A,B\->\dim([A]   19       13       
+    800        1     {A,B\->\dim([A]:Fill(0,[A]  19       15
+    800*       1     [[0\->\[A]:{A,B\->\dim([A]  110*     16
+
+(The starred* line was performed 160 times and the resulting
+time multiplied by 5. As you can see, resizing a matrix twice
+inside a loop is a terrible idea.)
+
+
+SUBSECTION 6.1. List equations.
+
+  It is possible to assign a string to a list. This has the
+effect of associating that string with the list as an equation,
+similar to a spreadsheet formula.
+
+    :"L1\^2\\->\L2
+    :{1,2,3\->\L1
+    :Disp L2
+    :{4,5,6\->\L1
+    :Disp L2
+
+A list which has been "pinned" in this way will show up in the
+[STAT]->Edit... display with a bullet next to its name (which
+the manual calls a "formula-lock symbol").
+  Assigning a new value to a "pinned" list, or assigning it
+the empty string
+
+    :"\->\L2
+
+will "unpin" its formula. One amusing aspect of pinned lists
+is that changing their dimensions has no effect --- given L2
+pinned as above to a three-element list, "2\->\dim(L2)" will
+set Ans to 2, but have absolutely no effect on the dimension
+or value of L2!
+
+
+SUBSECTION 6.2. Matrix operations.
+
+  In certain cases, a 2-by-n matrix can be replaced with a list
+of complex numbers, where the real part represents column 1 and
+the imaginary part column 2. This technique might save space, or
+it might not, but it does let you create and delete your own data
+structures, rather than overwriting one of the ten named matrices
+[A] through [J].
+
+  The TI-83's matrix operations can be very useful, though. The
+row+(, *row(, and *row+( functions let you quickly compute linear
+combinations of matrix rows (and, in combination with the "matrix
+transpose" operator, columns). The randM( function lets you create
+a random matrix, and the functions Matr>list( and List>matr( let
+you convert between list and matrix representations, with a bit of
+difficulty.
+
+
+SUBSECTION 6.3. Hunt the Wumpus dungeon generation.
+
+  The abilities to shuffle lists (see section 9.3) and to convert
+lists into matrices are at the heart of the game "Hunt the
+Wumpus", in which the "dungeon" is laid out with rooms at the
+vertices of a regular dodecahedron. In this pared-down example,
+we'll have only eight rooms, at the vertices of a cube. (The
+original 20-vertex code comes from my game WUMPUSR, available
+on ticalc.org.)
+
+    :seq(X,X,1,8\->\D
+    :Ans+1\->\L1
+    :Ans-2\->\L2
+    :rand(8\->\L3
+    :SortA(L3,LD
+    :1\->\L1(8
+    :8\->\L2(1
+    :{4,7,6,1,8,3,2,5\->\L3
+    :For(X,1,8
+    :LD(L1(X\->\L1(X
+    :LD(L2(X\->\L2(X
+    :LD(L3(X\->\L3(X
+    :End
+    :SortA(LD,L1,L2,L3
+    :List>matr(L1,L2,L3,[D]
+
+  This code snippet sets up the adjacency matrix [D], which
+is an 8x3 matrix whose entries [D](I,1), [D](I,2), and [D](I,3)
+are the numbers of the rooms adjacent to room I in the dungeon.
+  Lines 1, 4, and 5 give LD a random permutation of the
+numbers 1 through 8: the permutation by which the room labels
+will be swapped around. Lines 2, 3, 6, 7, and 8 set up lists
+L1, L2, and L3 with the rows of the adjacency matrix, according
+to this diagram:
+
+     1------2
+     |\8--7/|              23456781
+     | |  | |    [D]^T is  81234567 (e.g., 1 borders 2,8,4)
+     |/5--6\|              47618325
+     4------3
+
+  The next step is to shuffle the room labels according to LD.
+The next six lines accomplish the relabeling, and the final
+line puts L1, L2, and L3 into matrix [D] so the lists may be
+used for something else. The result is to produce a shuffled
+adjacency matrix; for example, if the shuffled LD were
+{4,7,6,1,8,3,2,5}, we'd have
+
+     7------5
+     |\3--8/|              74682153
+     | |  | |    [D]^T is  65827314 (e.g., 1 borders 7,6,2)
+     |/6--4\|              21768435
+     1------2
+
+
+SUBSECTION 6.4. Finding poker hands.
+
+  (This method is due to Chris Senez's TI-83+ program TXHOLDEM,
+and used in my prgmZPKEVAL, both available on ticalc.org.)
+
+  Suppose L1 contains a list of cards in a poker game, where
+1+iPart(L1(I)/13 represents the I'th card's face value and
+13fPart(L1(I)/13 represents its suit (as an integer between 0
+and 3 inclusive). Then the following section of code prints "ONE
+PAIR" if L1 contains exactly one pair of cards with matching values.
+
+    :DelVar [A]{5,14\->\dim([A]
+    :For(I,1,dim(L1
+    :13\^-1\L1(I
+    :1\->\[A](1+int(Ans),1+int(13fPart(Ans
+    :End
+    :[A]
+    :For(I,1,4
+    :row+(Ans,I,5
+    :End
+    :Matr>list(Ans\^T\,5,L2
+    :If 1=sum(L2=2)+2sum(L2>2:Disp "ONE PAIR
+
+  This method can be expanded in a systematic way to check for all
+sorts of poker hands. The most interesting thing about this method
+is that it doesn't depend on the length of L1 --- in fact, L1 is
+not even consulted after the initialization of [A]. Therefore, a
+single subroutine (see section 4) can be written to evaluate all
+kinds of poker hands, from ordinary five-card hands to the seven-
+and eight-card hands of stud poker.
+
+
+SECTION 7. Input hacks.
+
+SUBSECTION 7.1. Comma-separated list.
+
+    :Disp "ENTER A LIST
+    :Input "> ",Str0
+    :expr("{"+Str0\->\L1
+
+
+SUBSECTION 7.2. Cheating with "Input".
+
+  As mentioned in section 1.2, it's possible to leave off the "L"
+when referring to a user-defined list variable. Unfortunately,
+this quirk of TI-83 Basic opens a loophole in some game programs
+that rely on "Input" or "Prompt" to get values from the user.
+Consider the following (somewhat contrived) program:
+
+    prgmFLAWED
+    :randInt(0,9\->\G
+    :G\->\S
+    :Disp "GUESS MY NUMBER
+    :Prompt G
+    :"YOU LOSE!
+    :If G=S:"YOU WIN!
+    :Disp Ans
+
+It is possible to "win" every time simply by entering a list
+such as {1,2,3} at the prompt, instead of a single number.
+(Entering a string also works, as implied by section 6.1; the
+string will become associated with LG.)
+
+  There is no elegant way to keep the user from "cheating" like
+this. The only options are to write the program so that any
+trickery will only hurt the player (for example, by setting the
+input variable to a value representing "invalid" before invoking
+"Input" or "Prompt"); or to eschew "Input" and "Prompt" altogether.
+
+
+SUBSECTION 7.3. Illegal string characters.
+
+  It is impossible to write a program that stores \->\ or "
+(the quote character) into a string.
+
+  However, it is possible for the user to enter a quote
+character as part of a string via the "Input" command! If the
+user does that, nothing bad happens; the string simply contains
+a quote character. You can even apply "expr(" to the string and
+get back a string, if the quotes match up.
+
+
+SUBSECTION 7.4. The empty string.
+
+    ***WARNING!*** This section contains programs which
+    will clear your TI-83's memory! Do not experiment
+    with any of this section's code unless you have
+    recently backed up all your favorite programs to
+    your PC!
+
+  It is not possible to explicitly produce an empty list or
+a 0-column matrix in TI-83 Basic. However, it is possible to
+create an empty string.
+
+    :"\->\Str0
+
+The empty string is a strange creature. It can be assigned
+and displayed just like a normal string, but it has the
+following odd behaviors (some dependent on ROM version):
+
+    Command                   Calc, ROM v1.08      Virtual TI
+    ---------------           ----------------     -----------
+    length(Str0               0
+    Str0\->\Str1              Behaves normally
+    Disp Str0                  "
+    Output(1,1,Str0            "
+    Output(8,16,Str0           "
+    Text(1,1,Str0              "
+    Text(1,94,Str0             "
+    Text(1,95,Str0            ERR:DOMAIN, as usual
+    Str0+"X                   ERR:INVALID DIM
+    "X"+Str0                  ERR:INVALID DIM
+    Str0+Str0                 ERR:INVALID DIM
+    inString(Str0,"X",1       ERR:INVALID DIM
+    inString(Str0,"X",0       ERR:DOMAIN
+    inString(Str0,Str0,1      ERR:INVALID DIM
+    inString(Str0,Str0,0      ERR:DOMAIN
+    sub(Str0,1,1              ERR:INVALID DIM
+    sub(Str0,0,1              ERR:DOMAIN
+    sub(Str0,1,0              ERR:DOMAIN
+    sub(Str0,0,0              ERR:DOMAIN
+    Str0\->\L1                Behaves normally; L1 is created
+                              but empty; any access produces
+                              ERR:INVALID DIM
+    Str0\->\Y1                Clears Y1
+    Equ>String(Y1,Str1        Gives the empty string
+    expr("                    Clears the RAM       ERR:INVALID
+    "":expr(Ans               Clears the RAM       Hangs
+    expr(Str0                 Clears the RAM       Hangs
+
+  Therefore, it is possible to write a TI-83 Basic program
+that crashes the user's calculator and erases its memory!
+Needless to say, this is not a good idea, even as a prank.
+See section 10.3 for more on RAM-erasing crashes.
+
+
+SECTION 8. Two-calculator communications.
+
+  (The most extensive coverage I've found of TI-83 link
+programming is Frank Schoep's "The secret to linking two
+TI83's in TI BASIC", available on ticalc.org as 83BSLINK.TXT.)
+
+  There's not much written about programming the TI-83's link
+in Basic, and that's because very few programs have actually
+been written to use the link port (and those that have been
+written are often buggy or fragile). In short, the TI-83 doesn't
+have much support for two-calculator programming, and the
+support it does have (the "GetCalc" command) is essentially
+broken.
+
+  The TI-83 provides three link-port commands. Two of them, Get(
+and Send(, are only documented for use with the CBL and CBR,
+specialized hardware devices used in educational settings. That
+leaves GetCalc(.
+
+  GetCalc(X), where X can be the name of any variable, sends a
+request across the link attempting to receive the value of the
+given variable. If the link isn't connected, or if the other
+calculator is busy, the request will fail, and X will retain
+its old value.
+
+  What does it mean for the other calculator to be "busy"? If
+the progress indicator is ticking away normally, then the
+calculator is busy. GetCalc requests will only succeed if the
+other calculator is paused; at a menu; waiting for Input or
+Prompt; or not running a program at all.
+
+  A successful GetCalc request will cause the requestee's
+calculator to become un-paused, if it is currently paused.
+Consider the following pair of programs:
+
+    prgmREQR
+    :42\->\A
+    :While 1
+    :A\->\B
+    :GetCalc(A
+    :"SUCCESS
+    :If A=B:"FAILURE
+    :Disp Ans
+    :End
+
+    prgmREQEE
+    :DelVar A
+    :While 1
+    :1+A\->\A
+    :Pause "ABC
+    :Disp "DEF
+    :End
+
+If prgmREQR is started running, it will display "ABC" and then
+pause. When prgmREQEE starts running on the second calculator,
+if all goes well, prgmREQR will start spewing out alternating
+"ABC" and "DEF" lines, while prgmREQEE spews line after line of
+"SUCCESS". Terminating prgmREQEE will cause prgmREQR to start
+emitting "FAILURE".
+
+
+SECTION 9. Other hacks.
+
+SUBSECTION 9.1. Integer into string.
+
+  For small integers, the best way to convert an integer into
+a string is undoubtedly
+
+    :Prompt N
+    :sub("0123456789",N+1,1
+    :Disp "YOU ENTERED "+Ans+".
+
+This method should only be used with numbers under your control,
+since it will cause a program error (ERR:DOMAIN or
+ERR:INVALID DIM) if you try to feed it input such as 10 or 2/3.
+
+  For somewhat larger integers, a couple of variations on the
+above "indexing" method exist. Obviously, you can use 'int' and
+'fPart' to extract each digit and convert it as above, if you
+know the maximum number of digits your number may have.
+
+    :Prompt N
+    :"YOU ENTERED_
+    :If int(.1N:Ans+sub("123456789",int(.1N),1
+    :Ans+sub("0123456789",10fPart(.1N)+1,1
+    :Disp Ans+".
+
+  (In the above program, "_" represents a space character.
+Notice that while the calculator recognizes the empty string
+as a valid string, it produces an ERR:INVALID DIM if you try
+to concatenate anything onto it. Therefore, we must start
+building our string with a non-empty "seed" --- in this case,
+the whole text of our message, "YOU ENTERED...")
+
+  A second variation places no limit on the number of digits
+entered.
+
+    :Prompt N
+    :{0\->\L1
+    :For(I,1,1+log(N
+    :10fPart(.1N\->\L1(I
+    :int(.1N\->\N
+    :End
+    :".
+    :For(I,1,dim(L1
+    :sub("0123456789",L1(I)+1,1)+Ans
+    :End
+    :Disp "YOU ENTERED "+Ans
+
+(Notice that this program, as written, produces an ERR:DOMAIN
+on the input "0". However, this is easy to patch up, either with
+an "If X=0:Then... Else...", or by replacing "1+log(N" with
+"1-2not(N)+log(N+not(N" or some such obscure expression.
+
+  These methods can be adorned in various obvious ways to
+handle negative numbers, numbers with a fixed number of decimal
+places, numbers in bases other than 10, and so on.
+
+  However, there is a clever way to make the calculator do the
+work for us, if you don't mind overwriting the user's Y-vars.
+
+    :Prompt N
+    :{0,1\->\L1
+    :{0,N\->\L2
+    :LinReg(ax+b) Y1
+    :Equ>String(Y1,Str1
+    :Disp "YOU ENTERED "+sub(Str1,1,length(Str1)-3)+".
+
+This method uses the calculator's linear regression solver to
+store a formula in Y1 which contains the number N; for example,
+if the user entered 42, the equation in Y1 would be "42X+0".
+Then we can pull out the substring before the "X" in that
+string, and we have a string representation of our original
+number. This method automatically takes care of decimals and
+negative signs.
+
+
+SUBSECTION 9.2. Decimal into fraction.
+
+  (This method is due to Kenneth Hammond and Mikhail Lavrov.)
+
+  Interestingly, executing "Disp expr("X>Frac")" displays a
+fraction on the home screen, but "Text(1,1,expr("X>Frac"))"
+displays a decimal. Therefore, the only way to display a
+fraction on the graph screen is to convert it to numerator
+and denominator first, and then display them independently.
+
+    :Ans\->\X
+    :{1,abs(X
+    :Repeat E-9>Ans(2
+    :Ans(2){1,fPart(Ans(1)/Ans(2
+    :End
+    :iPart({X,1}/Ans(1
+    :Text(0,0,Ans(1),"/",Ans(2
+
+The last two lines are essentially equivalent to
+
+    :iPart(Ans(1)\^-1\\->\D
+    :iPart(XD\->\N
+
+This algorithm fails on many inputs, such as 61000/99, but it
+may be useful in some applications. (For example, you could
+convert the decimal to a string using this method and another
+method, and pick the shorter of the two results.)
+
+
+SUBSECTION 9.3. Shuffling a deck of cards.
+
+    :seq(I,I,0,51\->\L1
+    :rand(52\->\L2
+    :SortA(L2,L1
+
+This code is certainly the shortest and simplest way to shuffle
+a deck of cards, represented by a list of integers between 0 and
+51 inclusive. However, most of its time is spent computing
+random bits that never get used. Therefore, it is significantly
+faster to re-use different parts of the same random real numbers,
+like this:
+
+    :seq(I,I,0,51\->\L1
+    :rand(26
+    :augment(Ans, fPart(AnsE4\->\L2
+    :SortA(L2,L1
+
+In fact, it becomes even faster (though possibly at the cost
+of some randomness; I have not investigated this) to perform
+the augmenting step twice:
+
+    :seq(I,I,0,51\->\L1
+    :rand(13
+    :augment(Ans, fPart(AnsE3
+    :augment(Ans, fPart(AnsE6\->\L2
+    :SortA(L2,L1
+
+This is the watershed point, though; adding yet another "augment"
+(with rand(8) or rand(9)) takes longer.
+
+  But we can get even faster shuffles by taking the generation
+of random numbers into our own hands. (Of course, there's
+probably a tradeoff between speed and randomness here, as well,
+but I haven't noticed any problems with the following algorithm
+in practice, for calculator card games.)
+
+    :13\->\dim(L2:rand
+    :For(I,1,13
+    :fPart(97Ans\->\L2(I
+    :End
+    :augment(L2,fPart(L2E3
+    :augment(Ans,fPart(AnsE6\->\L2
+
+This method takes 24 bytes more than the best of the "rand(13)"
+methods, but it runs slightly faster. I'd recommend the above
+method if speed is paramount, and the "rand(13)" method otherwise.
+
+  Here is a table of timings for all the operations discussed
+in this section. The first entry in the table is for the
+sorting operation alone; the other entries are for setting up
+the list L2 alone, and don't include sorting.
+
+    Operation          Ticks/15 iterations     Bytes
+    -----------        -------------------     -----
+    SortA(L2,L1             5                    7
+    rand(52\->\L2          21                    8
+    rand(26, augment       14                   16
+    rand(13, aug x2        11                   24
+    rand(9, aug x3+dim     13                   43
+    rand(8, aug x3+dim     13                   39
+    rand+loop52            12                   22
+    rand+loop26+aug        10                   40
+    rand+loop13+aug x2      9                   48
+
+  There is yet another way to speed up shuffling. Consider a
+video poker game, in which at most only nine cards are shown
+between shuffles. To shuffle the whole 52-card deck before each
+hand would be a waste of time. Instead, simply pick the nine
+cards you'll be using, and swap them to the top of the deck:
+
+    :seq(I,I,0,51\->\L1
+    :For(I,1,9
+    :randInt(I,52\->\A
+    :L1(Ans\->\B
+    :L1(I\->\L1(A
+    :B\->\L1(I
+    :End
+
+
+SUBSECTION 9.4. The dbd( function.
+
+  The TI-83 guidebook has this to say about the dbd( function:
+"Use the date function dbd( to calculate the number of days
+between two dates using the actual-day-count method. date1 and
+date2 can be numbers or lists of numbers within the range of
+the dates on the standard calendar."
+
+  By "dates," the TI-83 means decimals in the form MM.DDYY
+or DDMM.YY, where the Ds, Ms, and Ys stand for digits. The
+calculator's "actual-day-count method" does indeed account
+for leap years.
+
+  Because there are only two digits for the year, the dbd(
+function treats all dates as falling between January 1, 1950,
+and December 31, 2049. (In this range of years, every fourth
+year is a leap year, with no exceptions.)
+
+
+SUBSECTION 9.5. Miscellaneous control flow hacks.
+
+  The following programs are self-contained snippets of code
+which can be inserted into a program without messing up the
+instruction pointer's "skipping" mode (see section 2.1). The
+"Disp" commands tell the input conditions under which they
+will be executed.
+
+    :If A:Then
+    :Disp "A
+    :If B:Else
+    :Disp "not(A) or not(B)
+    :End
+
+    :If A:Then
+    :Disp "A
+    :If B:DelVar XElse
+    :Disp "A and not(B)
+    :End
+
+    :If A:If B:Disp "B or not(A)
+
+    :If A:DelVar XIf 0
+    :Disp "not(A)
+
+  In the following program, the "DelVar" hides the beginning
+of a While loop from the interpreter's skipping mode, but then
+the "IS>(" command inserts a "While" that is seen in skipping
+mode but never executed, since the jump is always taken. (The
+string "A and not(B)" is never displayed unless B becomes false
+while inside the inner loop.)
+
+    :While A
+    :Disp "A
+    :DelVar XWhile B
+    :Disp "A and B
+    :IS>(Y,Y:While 1
+    :End
+    :Disp "A and not(B)
+    :End
+    :Disp "not(A) or not(B)
+
+
+SUBSECTION 9.6. Miscellaneous timings.
+
+  (For other timing tables, see sections 2.3, 3.3, 6, and 9.3.)
+
+  The following tables compare different methods of achieving
+the same goal, with timing information given. The timings were
+measured in "ticks" of the calculator's progress indicator,
+using programs of the form
+
+    prgmTEST
+    :For(I,1,<For iters>
+    :<code>
+    :<...Reps times...>
+    :<code>
+    :End
+
+For a caveat relating to this method of timing, see section 2.5.
+
+  The "Bytes" column gives the size of the tested line of code,
+in bytes, counting the newline.
+
+    For iters  Reps  Code                  Ticks    Bytes
+    200        15    max({A,B,C            27       8
+    200        15    max(A,max(B,C         22       8
+
+    200        15    max(A,B:max(Ans,max(C,D
+                                           37       13
+    200        15    max(A,max({B,C,D      34       11
+    200        15    max({A,B,C,D          32       10
+    200        15    max(max(A,B),max(C,D  30       12
+    200        15    max(A,max(B,max(C,D   29       11
+
+    200        15    max(A,max(B,max(C,max(D,max(E,F
+                                           45       17
+    200        15    max({A,B,C,D,E,F      44       14
+
+    200        15    int(A                 11*      3
+    200        15    iPart(A               11*      3
+
+  Interestingly, "int(" performs at 10 and "iPart(" at 13
+when A is 1 or -1, but both perform at 11 or 12 when A is
+pi or -pi; it even seems that "iPart(" has a slight edge in
+those cases.
+
+    200        15    -int(-A               15 16    5
+    200        15    iPart(A+.5            17 16    6
+    200        15    round(A,0             15 15    5
+
+  Left-hand tests performed with A=201; right-hand tests
+performed with A=pi. Notice that round(A,0) performs best;
+notice also that when A is negative, iPart(A+.5) is different
+from round(A,0). -int(-A) rounds A up to the nearest whole
+number, just as int(A) rounds A down to the nearest whole
+number.
+
+    200        15    \tan^-1\(Y/X          19 85    5
+                                           19 97
+    200        15    angle(X+Y\i\          25 86    7
+                                           37 100*
+    200        15    \R>Ptheta\(X,Y        52 110   5
+                                           79 122*
+
+The left set of tests were performed with X=-300, Y=0; the
+right set were performed with X=1, Y=3. The upper set were
+performed in radian mode; the bottom set were performed in
+degrees mode. The two starred* tests were run with only 100
+loop iterations, and the times doubled.
+  Note that the method using inverse tangent fails when (X,Y)
+is not in the first or third quadrant, or when X=0; the other
+two methods have no such limitation.
+
+    For iters  Reps  Code                  Ticks    Bytes
+    50         15    int(9rand             26       4
+    50         15    randInt(0,8           24       6
+
+    50         15    int(99rand            26       5
+    50         15    randint(0,98          25       7
+
+    50         15    randint(0,E8          25       7
+    50         15    int(randE8            24       5
+    50         15    iPart(randE8          24       5
+
+    200        15    2\^-1\X               22       4
+    200        15    X/2                   21       4
+    200        15    .5X                   13       4
+    200        15    1/L1(1                24       7
+    200        15    L1(1)\^-1\            23       7
+
+    100        15    .5(X+Y                18       7
+    100        15    mean({X,Y             25       6
+
+    50         15    7\xroot\e^(2          38       5
+    50         15    7\xroot\e\^2\         30       6
+    50         15    e^(2/7                20       5
+
+    200        15    X\>=\1/2              26       6
+    200        15    X\>=\2\^-1\           23       5
+    200        15    2X\>=\1               18       5
+    200        15    X\>=\.5               14       5
+
+The following tests show that there is no reason to prefer
+> over \>=\ nor = over \!=\, and that comparisons to powers
+of 2 or other "round" numbers don't go any faster than
+comparisons to "random" numbers.
+
+    200        15    X\>=\256              14       6
+    200        15    X\>=\235              14       6
+    200        15    X\>=\0                14       4
+    200        15    X>255                 14       6
+    200        15    X>234                 14       6
+    200        15    X>0                   14       4
+    200        15    X=42                  14       5
+    200        15    X=0                   14       4
+    200        15    not(X                 11       3
+    200        15    X\!=\42               14       5
+    200        15    X\!=\0                14       4
+    200        15    not(not(X             13       4
+
+    200        15    XY                    15 16    3
+                                           15 27
+    200        15    X and Y               16 16    4
+                                           16 16
+
+The above pair of tests was performed with X=0, Y=0
+(upper left); X=2, Y=2 (upper right); X=0, Y=e (lower left);
+and X=pi, Y=e (lower right).
+
+    200        15    X xor Y               16       4
+    200        15    X\!=\Y                17       4
+
+The above pair of tests was performed with X and Y taking
+all four combinations of 0 and 1; neither computation showed
+any dependence on the values of the operands.
+
+    100        10    X=21 or X=45           9      10
+    100        10    sum(X={21,45          12      10
+    100        10    max(X={21,45          11      10
+    100        10    12=abs(X-33            7       9
+
+The following tests were run with L1={1,2,3}. They demonstrate
+three ways to test whether all the elements of L1 are equal.
+
+    10         15    L1                     2       2
+    10         15    L1:Ans(1)=Ans(2) and Ans(2)=Ans(3
+                                           29      22
+    10         15    L1:min(Ans)=max(Ans   28      10
+    10         15    L1:min(not(\Delta\List(Ans
+                                           28       9
+
+
+SECTION 9.7. List of single-byte tokens.
+
+  The following table lists all the tokens on the TI-83 that take
+only one byte of RAM. All other tokens take two bytes. Notably not
+on this list are \e\ (the constant 2.718...); any list, matrix, or
+string variables; lcm(, gcd(, randInt(, sub(, inString(, real(,
+expr(, SinReg, DelVar, GetCalc(, and G-T.
+
+    0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZ \theta\
+    ?!'".,:()[]{} \space\ \newline\ \->\ \(-)\
+    Ans \E\ \L\ \i\ \pi\
+    +-*/^=<> \!=\ \<=\ \>=\ and or xor not( nPr nCr
+
+    getKey               ZStandard            rand
+    >DMS                 ZTrig                sin(, sin^-1(
+    >Dec, >Frac          ZBox                 cos(, cos^-1(
+    BoxPlot              Zoom In              tan(, tan^-1(
+    \^r\                 Zoom Out             sinh(, sinh^-1(
+    \degree\             ZSquare              cosh(, cosh^-1(
+    \^-1\                ZInteger             tanh(, tanh^-1(
+    \^2\, \^3\           ZPrevious            If, Then, Else
+    \^T\                 ZDecimal             For, End
+    round(               ZoomStat             While, Repeat
+    pxl-Test(            ZoomRcl              Pause
+    augment(, Fill(      ZoomSto              Lbl, Goto
+    rowSwap(             Text(                Return, Stop
+    row+(, *row(         FnOn, FnOff          IS>(, DS<(
+    *row+(               StorePic             Input, Prompt
+    min(, max(           RecallPic            Disp, Output(
+    R>Pr(                StoreGDB             ClrHome
+    R>P\theta\(          RecallGDB            Menu(
+    P>Rx(, P>Ry(         Line(                Get(
+    mean(, median(       Horizontal           Send(
+    randM(               Vertical             SortA(, SortD(
+    solve(               Pt-On(, Pt-Off(      DispTable
+    seq(                 Pt-Change(           PlotsOn, PlotsOff
+    fnInt(               Pxl-On(, Pxl-Off(    Plot1
+    nDeriv(              Pxl-Change(          Plot2
+    fMin(, fMax(         Shade(               Plot3
+    prgm                 Circle(              1-Var Stats
+    Radian, Degree       Tangent(             2-Var Stats
+    Normal, Sci, Eng     DrawInv(             LinReg(ax+b)
+    Float, Fix           DrawF                QuadReg
+    Horiz, Full          int(                 CubicReg
+    Func, Param          abs(                 QuartReg
+    Polar, Seq           det(                 LinReg(a+bx)
+    IndpntAuto           identity(            LnReg
+    IndpntAsk            dim(                 ExpReg
+    DependAuto           sum(, prod(          PwrReg
+    DependAsk            iPart(, fPart(       Med-Med
+    \box\                \sqrt(\              ClrList
+    \cross\              \cube-root(\         ClrTable
+    \dot\                \xroot\              Histogram
+    Trace                ln(, log(            xyLine
+    ClrDraw              e^(, 10^(            Scatter
+
+
+SECTION 10. Non-Basic miscellany.
+
+    ***WARNING!*** This entire section contains programs
+    and experiments which will clear your TI-83's memory!
+    Do not experiment with any of this section's code
+    unless you have recently backed up all your favorite
+    programs to your PC!
+
+
+SUBSECTION 10.1. Finding your ROM version.
+
+  Pressing Alpha-S from the Mode menu (while not editing a
+program) will prepare the calculator to enter its "self-test"
+mode. You'll see the text "Enter Self Test? 1.O8OOO" appear
+on the screen --- possibly with a different number in place of
+"1.O8OOO". That number is the ROM version of your calculator.
+  Pressing Enter from the "self-test" screen will clear your
+calculator's RAM. Pressing any other key (except 2nd or Alpha,
+which do nothing) will return you safely to the home screen.
+
+
+SUBSECTION 10.2. Hexadecimal assembly code.
+
+  It is possible to write Z80 assembly code on the calculator
+directly, in hexadecimal, if you know what you're doing and are
+willing to risk a crash. The command "Send(9prgmXXX" (yes, with
+the number 9 between "Send(" and the name of the program) will
+attempt to interpret prgmXXX as a sequence of hexadecimal digit
+pairs (i.e., bytes) possibly separated by newlines. The bytes
+are directly interpreted as Z80 machine code, so you must know
+what you're doing if you expect anything useful to happen (and
+want your RAM to stay uncorrupted).
+  Following the hexadecimal machine code must come three things:
+an "End" command, four hex digits which are typically zeros, and
+another "End" command. The TI-83 checks for the presence of these
+commands and will give "ERR: SYNTAX" if they're not there.
+  For example, the following program makes text display as white-
+on-black until some other event (e.g., viewing the PRGM menu)
+changes it back. (This program is harmless.)
+
+    prgmRVIDEO
+    :Send(9prgmZRVIDEO
+    :Disp "HELLO WORLD
+
+    prgmZRVIDEO
+    :FDCB05DEC9
+    :End:0000:End
+
+Notice that the machine-code program ends by returning to the place
+in prgmRVIDEO from which it was called, so "HELLO WORLD" is displayed
+in reverse video. Thus it is possible to write snippets of assembly
+code and call them from Basic programs. However, for guidance on how
+to write the actual machine code, you'll have to consult an assembly-
+language guide; TI-83 assembly language is much more difficult to
+experiment with than TI-83 Basic.
+
+
+SUBSECTION 10.3. Operating system glitches.
+
+    ***WARNING!*** This entire section contains programs
+    and experiments which will clear your TI-83's memory!
+    Do not experiment with any of this section's code
+    unless you have recently backed up all your favorite
+    programs to your PC!
+
+  (Most of this section's glitches were documented by Kenneth
+Hammond on United-TI's forums, and verified by myself on my own
+TI-83. See section 7.4 for some harmful glitches related to the
+empty string.)
+
+  There is a glitch in at least some versions of the TI-83 ROM,
+which has supposedly persisted all the way into the TI-84+. Using
+2nd-Rcl to recall a string (variable or Ans) containing the name
+of matrix [H] will actually give the string with all instances of
+"[H]" replaced by "lcm(".
+  Another glitch causes the assignments of certain strings (for
+example, "[H]1"\->\Str0 ) to display as long sequences of gibberish
+(in that example, "*row(8>Dec"). However, the strings still receive
+the right values (as can be seen by evaluating expr(Str0) in that
+example).
+  Both of these glitches are reproducible on VTI. I believe both
+of these glitches to be harmless, but I won't make any guarantees.
+
+  Another definitely harmful glitch, which is not reproducible on
+VTI, can be produced on the TI-83 this way: Set an equation (e.g.,
+Y1) to 0. Before viewing the graph, at the home screen, evaluate
+Equ>String(Y1,Str1) several times. Then press "Y=". Y2 will be
+filled with random gibberish. Attempting to down-arrow onto Y2 will
+cause a dramatic crash and require you to pull the batteries.
+  (This glitch has been tested on ROM version 1.08. It reportedly
+has different effects on different versions of the ROM.)
+
+  A note on dramatic, battery-pulling crashes: You may pull your
+batteries, and then find that when you replace them, pressing the
+On button doesn't seem to do anything. Don't panic! Your calculator
+is (probably) not fried; all that's happened is that its contrast
+level has been reset to 1 along with the rest of its factory
+defaults, so you can't see anything on the screen. Press 2nd-Up
+until the contrast level returns to normal.
+
+
+SECTION 11. References.
+
+  This guide would not have been possible without the excellent
+work of a lot of TI-83 Basic programmers over the past ten years,
+some of whom I contacted while polishing this guide. There are
+also a number of Web sites archiving tutorials and forum posts
+that may contain tips and hacks not mentioned in this guide.
+
+
+SUBSECTION 11.1. Contributors.
+
+  Thanks to "Axcho" and Kenneth Hammond (a.k.a. "Weregoose")
+for their extensive comments on a draft of this guide.
+http://www.ticalc.org/archives/files/authors/61/6138.html
+http://weregoose.unitedti.org/
+
+  Thanks to Mikhail Lavrov (a.k.a. "DarkerLine") for his
+comments on sections 5.3 and 7.4.
+http://mpl.unitedti.org/
+
+  Thanks to Chris Senez for his comments on section 6.4.
+http://www.ticalc.org/archives/files/authors/88/8835.html
+
+  Thanks to Frank Schoep for his comments on section 8.
+http://www.ticalc.org/archives/files/authors/24/2436.html
+
+  Thanks to Anders Tiberg for drawing my attention to the quirk
+described in section 2.5.
+http://www.ticalc.org/archives/files/authors/38/3835.html
+
+  An early reference to textsprites (section 5.3) is found in
+the forum post
+http://www.unitedti.org/index.php?showtopic=25&view=findpost&p=32601
+The technique was independently discovered by Kenneth Hammond,
+and also used in Mikhail Lavrov's game "Donut Quest" for the
+TI-83+, available at
+http://www.unitedti.org/index.php?download=46
+
+  The fraction-converting code in section 9.2 is taken from
+http://www.unitedti.org/index.php?showtopic=3892
+
+
+SUBSECTION 11.2. Web sites.
+
+  "ticalc.org", an archive of programs, tutorials, and the like.
+http://www.ticalc.org/
+
+  "United-TI", a site with a large archive of forum posts.
+http://www.unitedti.org/
+
+  "TI Freak Ware", a site with forums and a collection of tutorials.
+http://tifreakware.calcgames.org/tutorials/83p/b/
+
+  "Weregoose"'s Web site has an archive of code snippets.
+http://weregoose.unitedti.org/routines.html

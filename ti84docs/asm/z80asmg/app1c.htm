@@ -1,0 +1,40 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Z80 Assembly</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="Stylesheet" href="normal.css">
+</head>
+<body>
+<h1>Z80 Assembly - Instructions: Branching</h1>
+<h2>Jump instructions</h2>
+<p>These are the instructions that change the place of execution without saving their own address for a possible return.</p>
+<h3>JP and JR</h3>
+<p>Syntax: <code>jp/jr label or (hl)/(ix)/(iy)</code> (unconditional) or <code>jp/jr condition,label</code> (conditional)</p>
+<p>When arriving at any of these intructions, execution is immediately continued from the location denoted by the label given (you can use numbers instead of labels of course). If the operand is a register reference (e. g. <code>jp (hl)</code>), it means that the value of the register will be loaded into <tt>PC</tt> directly; these jumps can be unconditional only. Otherwise, if the condition is not fulfilled, execution continues as if there wasn&rsquo;t any jump. The flags are preserved in all the cases. The conditions can be the following:</p>
+<table border="1" cellspacing="0" cellpadding="2" align="center">
+<tr><td>condition</td><td>meaning</td></tr>
+<tr><td>c</td><td>carry (C) is set</td></tr>
+<tr><td>nc</td><td>carry is not set</td></tr>
+<tr><td>z</td><td>zero (Z) is set</td></tr>
+<tr><td>nz</td><td>zero is not set</td></tr>
+<tr><td>m</td><td>sign (S) is set</td></tr>
+<tr><td>p</td><td>sign is not set</td></tr>
+<tr><td>pe</td><td>parity/overflow (P/V) is set</td></tr>
+<tr><td>po</td><td>parity/overflow is not set</td></tr>
+</table>
+<p>The most important difference between the two jumps is that <code>jr</code> calculates the jump address with respect to itself, and the destination must be in its 128-byte vicinity. Moreover, <code>jr</code> can only take the first four conditions of those listed above. Besides all these differences, <code>jr</code> is slower but also smaller than the corresponding <code>jp</code>, therefore you have to decide whether speed or size is more important in the piece of code you place the jump into.</p>
+<h3>DJNZ</h3>
+<p>Syntax: <code>djnz label</code></p>
+<p><tt>B</tt> is decreased, and a <code>jr label</code> happens if the result was zero. The flags are preserved. Since this is a relative jump, it can only point to its 128-byte vicinity.</p>
+<h2><a name="sub"></a>Subroutine instructions</h2>
+<p>The two instructions of this section are also jumps, but by taking advantage of the stack, they offer the possibility to create subroutines.</p>
+<h3>CALL</h3>
+<p>Syntax: <code>call label</code> (unconditional) or <code>call condition,label</code> (conditional)</p>
+<p>The address of the instruction immediately following the <code>call</code> (i. e. PC+3) is saved to the stack, and execution is continued from the address given by the label. The conditions are the same as those of the absolute jump, i. e. all the eight conditions can be used. The flags are preserved.</p>
+<h3>RET</h3>
+<p>Syntax: <code>ret</code> (unconditional) or <code>ret condition</code> (conditional)</p>
+<p>The word on the top of the stack is retrieved and it is used as the address of the next instruction from which the execution is to be continued. This is basically a <em>pop pc</em>. The conditions work the same way as above, all of them can be used. The flags are preserved.</p>
+<p><a href="app1.htm">Back to the index</a></p>
+</body>
+</html>

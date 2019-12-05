@@ -1,0 +1,247 @@
+<html>
+<head>
+<title>Z80 Assembly Optimization Tricks - v2.1 - by Adam Ziemba</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<style><!--
+a {text-decoration: none;}
+a:link {color: #0077dd;}
+a:active {color: #000000; background-color=#fdb400}
+a:hover {color: #ff0000; text-decoration: underline;}
+#content {position: absolute}
+body
+{	margin:0px; width:100%; height:100%; margin:0,0,0,0;
+	scrollbar-arrow-color: #70737B; scrollbar-face-color: #F7F9FB; scrollbar-shadow-color: #70737B;
+	scrollbar-darkshadow-color: #F7F9FB; scrollbar-track-color: #F7F9FB; scrollbar-highlight-color: #70737B;
+	scrollbar-3dlight-color: #F7F9FB;
+}
+#head-01 {position:absolute; left:0px;   top:0px; width:100px; height:206px;}
+#head-02 {position:absolute; left:100px; top:0px; width:100px; height:206px;}
+#head-03 {position:absolute; left:200px; top:0px; width:100px; height:206px;}
+#head-04 {position:absolute; left:300px; top:0px; width:100px; height:206px;}
+#head-05 {position:absolute; left:400px; top:0px; width:100px; height:206px;}
+#head-06 {position:absolute; left:500px; top:0px; width:100px; height:206px;}
+#head-07 {position:absolute; left:600px; top:0px; width:100px; height:206px;}
+#head-08 {position:absolute; left:700px; top:0px; width:93px;  height:206px;}
+-->
+</style>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+</head>
+
+<body bgcolor=#dddddd vlink=#0077dd>
+<basefont name="Verdana,Arial,Helvetica,sans-serif" color=#000000 size=1>
+
+<script language="JavaScript"><!--
+if (navigator.appName=="Netscape") {document.write('<div align=center><table height=164 width=100% cellspacing=0 cellpadding=0 border=0 bgcolor=#ffffff><tr valign=top><td width=524><a href="http://home.graffiti.net/fortress_productions"><img width=524 height=164 src="banner.jpg" border=0></a></td></tr></table>')}
+else {document.write('<table height=164 width=100% cellspacing=0 cellpadding=0 border=0 bgcolor=#ffffff><tr height=164><td width=524><a href="http://home.graffiti.net/fortress_productions"><img width=524 height=164 src="banner.jpg" border=0></a></td></tr></table>')}
+//-->
+</script>
+</div>
+<table height=100% width=100% cellspacing=0 cellPadding=20 border=0>
+	<tr valign=top><td width=100%>
+		<table cellspacing=0 cellpadding=0 border=1 bordercolor=#000000 width=100% height=100 align=center>
+			<tr valign=top><td bgcolor=#eeeeee>
+				<table height=100% cellSpacing=0 cellPadding=5 border=0 width=100%>
+					<th height=10 bgcolor=#bbbbbb>
+						<div align=center><font face="Verdana,Arial,Helvetica,sans-serif" size=3>
+						<big><strong>Introduction</strong></big>
+						</font></div>
+					</th>
+					<tr valign=top><td>
+						<div align=justify><font face="Verdana,Arial,Helvetica,sans-serif" size=2 color=#000000>
+							<p>This guide is targeted toward experienced programmers who would like to learn how to write programs with optimal efficiency. The basic concepts and elementals of the languages presented here are beyond the scope of this guide. If you'd like to learn Z80 Assembly, click <a href="http://www.ticalc.org/pub/text/z80/">here</a>.</p>
+							<p>Often times Z80 programmers use inefficient code because they have no way of knowing that certain instructions will use less memory or less time than others. You can use what's called a <i>code counter</i> to test how many clock cycles and bytes a set of instructions will use. There are several code counters available on the internet. You could test your code outside of the editor that you use to write it, or you could do it within the editor, using <strong><i>Assebly Studio 8x</i></strong>. I personally always use Assembly Studio 8x when I write in ASM, and I highly suggest you do the same. Using its built-in code counter, you'll find that writing efficient programs is far easier than you ever though possible. Assembly Studio also features an easy-to-use sprite editor, and allows you to edit and compile your programs all in a user-friendly Windows environment. To get Assembly Studio, <a href="http://asmstudio.acz.org">click here</a></p>
+							<p>Note that all the optimization tricks presented here coincide with all the Z80-based calculators (TI-73, 82, 83, 83 Plus, 84, 84 Plus, 85, and the 86). Most of these tricks can, in fact, be used on any Z80-based platform, calculator or not (it will say if the trick is just for TI calculators)</p>
+						</font></div>
+					</td></tr>
+				</table>
+			</td></tr>
+		</table>
+		<p></p>
+		<table cellspacing=0 cellpadding=0 border=1 width=100% height=100 bordercolor=#000000 align=center>
+			<tr><td bgcolor=#eeeeee>
+				<table height=100% cellSpacing=0 cellPadding=5 border=0 width=100%>
+					<th height=10 bgcolor=#bbbbbb>
+						<div align=center><font face="Verdana,Arial,Helvetica,sans-serif" size=3>
+						<big><strong>Z80 Assembly Optimization Tricks</strong></big><br><small>Version 2.1</small>
+						</font></div>
+					</th>
+					<tr><td>
+						<div align=center><font face="Verdana,Arial,Helvetica,sans-serif" size=3><strong>by Adam Ziemba</strong></font><br><font face="Verdana,Arial,Helvetica,sans-serif" size=2>other contributors listed at <a href="#contrib">bottom</a></font></div><br>
+						<div align=center><font face="Verdana,Arial,Helvetica,sans-serif" size=2>
+							<p>For easy reference, you can use these links to jump to a specific topic on this page:
+						</font></div>
+						<table width=200 cellpadding=0 cellspacing=0 border=0 align=center><tr><td>
+							<div align=left><font face="Verdana,Arial,Helvetica,sans-serif" size=2>
+								<dir>
+									<li><a href="#notice">Note on Z80 Assembly</a>
+									<li><a href="#z80literacy">Z80 Assembly Literacy</a>
+									<li><a href="#time">Time Consumption</a>
+									<li><a href="#memory">Memory Consumption</a>
+									<li><a href="#tricks">Useful Tricks</a>
+								</dir>
+							</font></div>
+						</td></tr></table>
+						<a name="notice"></a>
+						<table width=90% cellspacing=0 cellpadding=5 border=0 align=center bgcolor=#dddddd>
+							<th height=5 bgcolor=#006080>
+								<div align=center><font face="Verdana,Arial,Helvetica,sans-serif" size=2 color=#ffffff>
+								<strong>Note on Z80 Assembly</strong>
+								</font></div>
+							</th>
+							<tr valign=top><td>
+								<div align=justify><font face="Verdana,Arial,Helvetica,sans-serif" size=2 color=#000000>
+								<p>Z80 Assembly programs run at an extremely fast pace. The tricks listed below may show how many cycles and bytes they conserve over the conventional method. CPU time is measured in clock cycles, or as it is sometimes called, <strong>t-states</strong>. The TI-83 Plus CPU runs at about 6 MHz, which is equivilent to 6 million clock cycles per second. There are many optimizations listed below that only save but a few clock cycles. So if it saves 3 clock cycles, this means that you will save about three six-millionths of second! Not much a difference, but even the most precise variations can accumulate to be very time consuming, and always using the most efficient route possible is an indication of a good programmer.</p>
+								</font></div>
+							</td></tr>
+						</table>
+						&nbsp;
+						<a name="z80literacy"></a>
+						<table width=90% cellspacing=0 cellpadding=5 border=0 align=center bgcolor=#dddddd>
+							<th height=5 bgcolor=#006080>
+								<div align=center><font face="Verdana,Arial,Helvetica,sans-serif" size=2 color=#ffffff>
+								<strong>Z80 Assembly Literacy</strong>
+								</font></div>
+							</th>
+							<tr valign=top><td>
+								<div align=justify><font face="Verdana,Arial,Helvetica,sans-serif" size=2 color=#000000>
+								<p>In order for you to completely comprehend how Z80 Assembly works, you must be sure to always communicate about it correctly. Below are several rules you need to comply with so as to avoid complications when conveying Z80 Assembly notion:</p>
+								<ul>
+									<li>Never say <i>This instruction sets the NZ flag</i>. There's no such thing as the NZ flag. What you meant to say was, <i>This instruction <strong>resets</strong> the Z flag</i>.
+									<li>Generally, you should never dictate values in octal bases in Z80 ASM. Although most assemblers allow you to use them easily, there's really no point. Binary is used to indicate how sprites will appear on the screen, and hexadecimal is used to show how values will be stored in the memory. Decimal, of coarse, is only used for simplicity reasons. However, octal doesn't serve any relevant purpose, so avoid using it at all costs.
+									<li>Many assemblers allow you to use the <i>$</i> symbol to precede hexadecimal values and <i>%</i> to precede binary values. Alternatively, assemblers also allow you to place <i>h</i> or <i>b</i> after the value to indicate the base being used. It is preferred that you always use <i>$</i> and <i>%</i> for two reasons. First of all, when you're reading the code and you see that symbol, you know what base is being used beforehand, instead of having to look at the value and <i>then</i> the base. But more importantly, <i>$</i> and <i>%</i> are much easier on the eyes.
+									<li>Never use <code><big><i>ld A,$5</i></big></code> in assembly. If you're going to use hexadecimal values, be sure to always include leading and trailing zeros. Using just <i>$5</i> is a bit ambigious, as someone might misinterpret it as being <i>$50</i>. So to avoid complications, include the leading zero. This goes for 16-bit loads as well. So <code><big><i>ld BC,$D</i></big></code> should be written as <code><big><i>ld BC,$000D</i></big></code>.
+									<li>Generally, always use decimal values for the first argument of a <code><big>set</big></code>, <code><big>res</big></code>, or <code><big>bit</big></code> instruction. It is understood that valid bit values range from 0 to 7, so there's no need to use hex or binary.
+									<li>Never use unneccessary expressions as arguments in ASM. For instance:<code><big><dd>ld HL,appBackUpScreen-12-(-(12*64)+1)-2*4</big></code><br>This expression serves no relevant purpose, so to save avoid confusion, simply evaluate it to <code><big>ld HL,appBackUpScreen-771</big></code>. However, expressions may be used so long as they prove relevant. For instance:<code><big><dd>ld HL,12*256+45<dd>ld (_penCol),HL</big></code><br>This expression tells us that pen coordinates will be located at (12,45).
+								</ul>
+								</font></div>
+							</td></tr>
+						</table>
+						&nbsp;
+						<a name="time"></a>
+						<table width=90% cellspacing=0 cellpadding=5 border=0 align=center bgcolor=#dddddd>
+							<th height=5 bgcolor=#006080>
+								<div align=center><font face="Verdana,Arial,Helvetica,sans-serif" size=2 color=#ffffff>
+								<strong>Time Consumption</strong>
+								</font></div>
+							</th>
+							<tr valign=top><td>
+								<div align=justify><font face="Verdana,Arial,Helvetica,sans-serif" size=2 color=#000000>
+									<p>Sometimes you might need to optimize for sake of time, even at the expense of memory. For an example, if you writing a 1-paged FLASH application, you have no choice but to use exactly 16384 bytes. So if you end finishing your program and you still have used way less than 16384 bytes, you should optimize it so that it runs faster. The tricks listed below show many ways to do this.</p>
+									<ol start=1>
+										<li>When adding or subtracting from the accumulator, you shouldn't use the <code><big>inc</big></code> or <code><big>dec</big></code> more than once. So you shouldn't ever use:<code><big><dd>inc A<dd>inc A</big></code><br>Instead, use<code><big><dd>add A,$02</big></code><br>The same goes for <code><big>dec A</big></code> as well. This trick will save no memory, but it does take up one less clock cycle. This means that on the TI-83 Plus (6 MHz), you'll be conserving about one six-millionths of a second!<br>&nbsp;
+										<li>For 8-bit subtraction of registers <i>other than the accumulator</i>, you shouldn't use the <code><big>dec</big></code> instruction more than 3 times. For example:<code><big><dd>dec D<dd>dec D<dd>dec D<dd>dec D<dd>dec C<dd>dec C<dd>dec C</big></code><br>This should be optimized into<code><big><dd>ld A,D<dd>sub $04<dd>ld D,A<dd>dec C<dd>dec C<dd>dec C</big></code><br>Using the <code><big>sub</big></code> instruction here saved 1 clock cycle. But the <code><big>dec C</big></code> statements remained, because using <code><big>dec</big></code> three times uses one less byte than:<code><big><dd>ld A,C<dd>sub $03<dd>ld C,A</big></code><br>&nbsp;
+										<li>Use <code><big>jp</big></code> instead of <code><big>jr</big></code>. <code><big>jp</big></code> is faster, but uses one extra byte. So if you are making an application, you should probably always use <code><big>jp</big></code>.<br>&nbsp;
+										<li>Never use:<code><big><dd>or A<dd>ret Z<dd>jp loop</big></code><br>Use:<code><big><dd>or A<dd>jp NZ,loop<dd>ret</big></code><br>This saves 1 clock cycle.<br>&nbsp;
+										<li>Never use:<code><big><dd>ld BC,$0501<dd>...<dd>ld B,$08<dd>dec C</big></code><br>Whenever you find yourself in a situation such as this (assuming BC is not destroyed within the '<code><big>...</big></code>'), you can save 1 clock cycle by simply doing this:<code><big><dd>ld BC,$0501<dd>...<dd>ld BC,$0800</big></code>
+										<li>Whenever you need to fill area of memory with a specific value, you might opt to do it this way:<code><big><dd><dd>ld HL,area<dd><dd>ld B,100<dd>fill_loop:<dd><dd>ld (HL),A<dd><dd>inc HL<dd><dd>djnz fill_loop</big></code><br>You should instead use the <code><big>ldir</big></code> instruction. In most cases, <code><big>ldir</big></code> uses a little more memory, but much less time. The example above used 9 bytes, with 26 cycles per byte. Whereas with the following example, which uses <code><big>ldir</big></code>, only takes 12 bytes, with 21 cycles per byte:<code><big><dd><dd>ld BC,100<dd><dd>ld HL,area<dd><dd>ld DE,area+1<dd><dd>ld (HL),A<dd><dd>ldir</big></code>
+									</ol>
+								</font></div>
+							</td></tr>
+						</table>
+						&nbsp;
+						<a name="memory"></a>
+						<table width=90% cellspacing=0 cellpadding=5 border=0 align=center bgcolor=#dddddd>
+							<th height=5 bgcolor=#006080>
+								<div align=center><font face="Verdana,Arial,Helvetica,sans-serif" size=2 color=#ffffff>
+								<strong>Memory Consumption</strong>
+								</font></div>
+							</th>
+							<tr valign=top><td>
+								<div align=justify><font face="Verdana,Arial,Helvetica,sans-serif" size=2 color=#000000>
+									<p>The first and foremost aspect of a good ASM programmer is his ability to use as little memory as possible while still achieving the desired effect. The tricks listed below show many ways on how to conserve memory, as well as time.</p>
+									<ol start=1>
+										<li>Never use:<code><big><dd>ld B,5<dd>ld C,12</big></code><br>You should instead load the values simultaneously into the BC register pair, saving you 1 byte and 4 clock cycles:<code><big><dd>ld BC,$050C</big></code><br>If you do not want to have to go through the trouble of converting the values into hexadecimal, you can use this formula instead:<code><big><dd>ld BC,5*256+12</big></code><br>There's really no need to ever convert to hexadecimal. The reason why I always do is because it dictates how large of a load is taking place. Mnemonic values are almost always dictated in hexadecimal, because every two digits of hex corresponds as one byte in memory consumption. This way you can easily tell how the values will be stored in memory.<br>&nbsp;
+										<li>Never use:<code><big><dd>ld A,$00</big></code><br>Use:<big><code><dd>xor A</code></big><br>The <big><code>xor</code></big> instruction performs a binary exclusive OR operation on the argument and the accumulator. So if the argument <i>is</i> the accumulator, the result will always be 0. This is because when the XOR operation is performed on two equal numbers, the condition for each bit is evaluated as false. You can also use <code><big>xor A</big></code> to set the zero flag.<br>&nbsp;
+										<li>Never use:<code><big><dd>cp $00</big></code><br>Use<big><code><dd>or A</code></big><br>The <big><code>or</code></big> instruction performs a binary inclusive OR operation on the argument and the accumulator, and effects the zero flag. So if the argument <i>is</i> the accumulator, an inclusive OR operation will make no changes, but the zero flag will still be effected. So there's no need to compare A to 0.<br>&nbsp;
+										<li>Note that the <code><big>cp</big></code> instruction subtracts the argument from the accumulator but doesn't store it anywhere. If you do not need to use the accumulator later on, than just use the <code><big>sub</big></code> or <code><big>dec</big></code> instruction, because they both effect the zero flag. Here's an example:<code><big><dd>B_CALL GetKey<dd>cp kRight<dd>jr Z,right_pressed<dd>cp kLeft<dd>jr Z,left_pressed<dd>cp kEnter<dd>jr Z,enter_pressed</big></code><br>Since kRight=$01, kLeft=$02, and kEnter=$05, you can optimize the code into this:<code><big><dd>B_CALL GetKey<dd>dec A<dd>jr Z,right_pressed<dd>dec A<dd>jr Z,left_pressed<dd>sub $03<dd>jr Z,enter_pressed</big></code><br>In this example, we saved 3 bytes, 9 cycles.<br>&nbsp;
+										<li>Never use:<code><big><dd>xor A<dd>ld BC,$0000</big></code><br>Use:<code><big><dd>xor A<dd>ld B,A<dd>ld C,A</big></code><br>Always use registers to assign values rather than constant expressions whenever possible. This saves both memory and time.<br>&nbsp;
+										<li>Never use:<code><big><dd>or A ; Reset carry flag<dd>ld BC,$0015<dd>sbc HL,BC</big></code><br>Instead, add the negative:<code><big><dd>ld BC,-$0015<dd>add HL,BC</big></code><br>This will prevent you from having to use <code><big>or A</big></code> to reset the carry flag, and the <code><big>add</big></code> instruction uses only 1 byte, whereas the <code><big>sbc</big></code> instruction uses 2 bytes. In all, this trick saves you 2 bytes, 8 clock cycles.<br>&nbsp;
+										<li>When you need to save temporary data <strong>DO NOT</strong> define bytes or words within the program itself! All the Z80-based calculators have ample amounts of free, safe RAM for you to use. TI-83 Plus programmers can use all the RAM within <big><code>appBackUpScreen</code></big>, and <big><code>SaveSScreen</code></big>. Both of these are 768 bytes in size. If that's not enough, you can also use <big><code>tempSwapArea</code></big> (232 bytes) and <big><code>cmdShadow</code></big> (128 bytes). These RAM locations contain temporary data used by TI-OS, but are free to use while ASM programs are running. This memory may be used to save <strong>temporary</strong> data only. Think of them as the variables A through Z used in BASIC, except for ASM, and much larger in size! Here's an example:<big><code><dd><dd>ld (score),A<dd><dd>ld BC,(temp)<dd><dd>ld (high_score),DE<dd>score:<dd><dd>.db 0,0<dd>temp:<dd><dd>.db 0,0<dd>high_score:<dd><dd>.db 0,0</code></big><br>This should be optimized into<big><code><dd>score  EQU appBackUpScreen<dd>temp  EQU appBackUpScreen+$02<dd><dd>...<dd><dd>ld (score),A<dd><dd>ld BC,(temp)<dd><dd>ld (high_score),DE<dd>high_score:<dd><dd>.db 0,0</code></big><br>'score' and 'temp' are instead saved within <big><code>appBackUpScreen</code></big>, thus making the program 4 bytes smaller. Because a high score is saved for later use, it should be stored within the program itself.<br><strong>NOTE:</strong> if you are developing a program for MirageOS or ION, cmdShadow must not be altered, as it is used by some of the ION routines (MirageOS uses these same ION routines).<br>&nbsp;
+										<li>Whenever DE is not being used and you need to temporarily save HL (or vice versa), use <code><big>ex DE,HL</big></code> and then use it again to exchange it back. But you must make sure that the code inbetween the two <code><big>ex</big></code> statements does not contain any instructions or call any routines that destroy DE, or if you're saving DE in HL, than make sure HL is not destroyed.<br>The best example of this trick is when you want to save the contents of HL while calling Getkey, or so it seems. You may have noticed that in the TI-83 Plus Developer Guide, it says that DE is not destroyed by the GetKey routine. This is, however, a misprint. Thus, don't attempt to use <code><big>ex DE,HL</big></code> to save HL while calling GetKey!<br>&nbsp;
+										<li>Often times you might need to conditionally use certain instructions that can't be conditionally used. For instance, let's say you need to check to see if split screen mode is active, and if so, deactivate it. One way is to just call a subroutine that sets the splitOverride flag, that way you can call it conditionally:<code><big><dd><dd>B_CALL CheckSplitFlag<dd><dd>call Z,setSplitOverride<dd><dd>...<dd>setSplitOveride:<dd><dd>set grfSplitOverride,(IY+sGrFlags)<dd><dd>ret</big></code><br>But let's optimize this and instead use <code><big>jr</big></code>, which uses 2 bytes when called conditionally, whereas <code><big>call</big></code> uses 3 bytes when called conditionally:<code><big><dd><dd>B_CALL ChkSplitOverride<dd><dd>jr NZ,skipSplitOverride<dd><dd>set splitOverride,(IY+sGrFlags)<dd>skipSplitOverride:<dd><dd>...</big></code><br>Plus, you don't need a <big><code>ret</code></big> instruction when you use <big><code>jr</code></big>.<br>&nbsp;
+										<li>Never use:<code><big><dd>ld A,D<dd>or A<dd>jr Z,DEqualsZero</big></code><br>Instead, use:<code><big><dd>inc D<dd>dec D<dd>jr Z,DEqualsZero</big></code><br>&nbsp;
+										<li>Use <code><big><dd>push DE<dd>...<dd>pop DE</big></code><br>instead of <code><big><dd>ld (ADDR),DE<dd>...<dd>ld DE,(ADDR)</big></code><br>whenever possible. The <big><code>ld (ADDR),rr</code></big> instruction uses 3 bytes, 16 cycles, whereas <big><code>push</code></big> uses only 1 byte, 11 cycles.<br>&nbsp;
+										<li>Never use:<code><big><dd>push BC<dd>...<dd>pop BC<dd>ld D,B<dd>ld E,C</big></code><br>The <code><big>pop</big></code> instruction pops the value on the top of the stack into the specified register pair, so it doesn't have to be the same register pair as the corresponding <code><big>push</big></code> statement:<code><big><dd>push BC<dd>...<dd>pop DE</big></code><br>&nbsp;
+										<li>Whenever you want to reset the carry flag, never use:<code><big><dd>scf<dd>ccf</big></code><br>Instead, use:<code><big><dd>or A</big></code><br>The <code><big>or</big></code> instruction resets the carry flag.<br>&nbsp;
+										<li>This should be common sense, but never use:<code><big><dd>sub $01<dd>ld BC,$0003<dd>add HL,BC</big></code><br>Use the <code><big>inc</big></code> and <code><big>dec</big></code> instructions!<code><big><dd>dec A<dd>inc HL<dd>inc HL<dd>inc HL</big></code><br>&nbsp;
+										<li>In response to trick #14, you shouldn't use <code><big>inc HL</big></code> more than three times. Beyond that you should use <code><big>add HL,$0004</big></code>. This rule applys only when <strong>adding</strong> to HL. When subtracting from HL, you shouldn't use <code><big>dec HL</big></code> more than 4 times. Beyond that use:<code><big><dd>ld DE,-$0006<dd>add HL,DE</big></code><br>When it comes to 8-bit subtraction, there are no optimization tricks that save memory, but there are some that save time - see rule #1 and #2 under <a href="#time">Time Consumption</a>.<br>&nbsp;
+										<li>Whenever you need to store a value into a RAM location and then recall the value later on, you might consider using the conventional method, which is as follows:<code><big><dd>score = appBackUpScreen<dd><dd>ld A,$12<dd><dd>ld (score),A<dd><dd>...<dd><dd>ld BC,$0505<dd><dd>ld (curRow),BC<dd><dd>ld A,(score)<dd><dd>B_CALL PutC</big></code><br>In the example above, $15 is stored into <code><big>(score)</big></code> and then after being recalled later on in the program, the corresponding character for the value of <code><big>(score)</big></code> is displayed at row 5, column 5. But rather than store the value in some RAM location, it would more efficient to store the value within the code itself. So the example above could be optimized into:<code><big><dd><dd>ld A,$12<dd><dd>ld (score),A<dd><dd>...<dd><dd>ld BC,$0505<dd><dd>ld (curRow),BC<dd>score = $ + 1<dd><dd>ld A,$00 ; ld A,(score)<dd><dd>B_CALL PutC</big></code><br>This is a technique called <strong>code mutation</strong>. Basically, what we are attempting do here is alter the parameters of the coded instructions. This a quite complex concept to grasp, so read carefully. First, let's examine how the assembler will compile the object code. Every ASM instruction has its own unique value that corresponds to it. This value is known as the <strong>opcode</strong>. For instance, <code><big>$3E,nn</big></code> is the opcode for the <code><big>ld A,nn</big></code> instruction (where <code><big>nn</big></code> is the 8-bit value that's being loaded into A). So what the assembler does is translates all the instructions into their corresponding opcode. But what about labels? For instance, in the isntruction <code><big>jp main</big></code>, how does the assembler know what to value to substitute for <code><big>main</big></code>? All labels correspond to where they will be stored in the calculator's memory. The assembler starts storing opcode at the memory location specified by the <code><big>.org</big></code> instruction.
+But that is beside the point of this trick. What this trick does is alters, or mutates, the opcode itself. Notice in the first example above, we loaded <code><big>(score)</big></code> into A. But instead of having <code><big>score</big></code> point to appBackUpScreen, we could make <code><big>score</big></code> point to the <code><big>nn</big></code> parameter of the <code><big>ld A,nn</big></code> statement. To do this, we made a label that would point to that location in the memory. The <code><big>$</big></code> symbol, when without a value next to it, tells the compiler to substitute it with the current memory location that the following instruction will be stored at. In the example above, we used <code><big>score = $ + 1</big></code>. Notice the instruction following this is <code><big>ld A,$00</big></code>. So <code><big>score = $ + 1</big></code> tells the assembler to let the label <code><big>score</big></code> point to the $00 part of the <code><big>ld A,$00</big></code> statement. So when we are writing the code, it wouldn't matter what value we put for <code><big>nn</big></code> of the <code><big>ld A,nn</big></code> instruction, as it would eventually change anyway. It could as well of been $D6 or something. So that's the reason why we used <code><big>ld A,$00</big></code> instead of <code><big>xor A</big></code> in the 2nd example above. Code mutations can sometimes be difficult to recognize when they are being used in programs. Since we know to always use <code><big>xor A</big></code> instead of <code><big>ld A,$00</big></code>, we can use <code><big>ld A,$00</big></code> to indicate that a code mutation is being taken place, as that would be the only case that you <i>wouldn't</i> use <code><big>xor A</big></code> instead of <code><big>ld A,$00</big></code>. Note that you can also use this trick for 16-bit loads as well. Also, you can't use another <code><big>ld A,$00</big></code> statement and attempt to mutate it using the same label. This should be common sense. After you've used one code
+mutation, you'll have to use the conventional method if you wish to load it somewhere else in the program.<br>Code mutations are a lot to take in when you first learn them, but it's quite easy once you get the hang of it. The gain here is that <code><big>ld A,nn</big></code> is smaller and faster than <code><big>ld A,(ADDR)</big></code>, and even more so is when you need to load the value into a register other than the accumulator. Conventionally, it would take 4 bytes, 17 cycles to do this. But using code mutation, you will save 2 bytes, 10 cycles. Regardless of how much work is required, you should always use as little memory possible. Every byte counts!<br>&nbsp;
+										<li>One important thing to point out about code mutation is that the parameter that is to be modified will have the same initial value everytime the program is first executed<sup>†</sup>. So the initial value for the a variable can be assigned immediately in the code. The following example causes the <code><big>lives</big></code> variable to start off with a value of 3 every time the game is started:<code><big><dd>lives = $ + 1<dd><dd>ld A,$03</big></code><br>This saves you from having to assign the value at the beggining of the game seperately, as shown below:<code><big><dd><dd>ld A,$03<dd><dd>ld (lives),A</big></code><br><sup>†</sup><strong>NOTICE:</strong> Some shells will allow write-back in assembly programs. This means that any code mutation will be reflected the next time the program is ran. If you are developing an ASM program for TI-OS, than you need not worry about this. But if you are developing an ASM program for a shell, such as MirageOS, than you will need to assign the value seperately at the beggining of the program.<br>&nbsp;
+										<li>Whenever you need to call subroutines, you might consider using:<code><big><dd><dd>ld HL,param1<dd><dd>call sub1<dd><dd>ld HL,param2<dd><dd>call sub2<dd><dd>ld HL,param3<dd><dd>call sub1<dd><dd>...<dd>sub1:<dd><dd>...<dd><dd>ret<dd>sub2:<dd><dd>...<dd><dd>ret</big></code><br>This is the conventional way to do this. However, there is a much more efficient way to do this using what's known as <strong>call tables</strong>. Here's how they work:<code><big><dd><dd>ld SP,callTable<dd><dd>ret ; Jump to sub1<dd>sub1:<dd><dd>pop HL<dd><dd>...<dd><dd>ret<dd>sub2:<dd><dd>pop HL<dd><dd>...<dd><dd>ret<dd>callTable:<dd><dd>.dw sub1,param1<dd><dd>.dw sub2,param2<dd><dd>.dw sub1,param3</big></code><br>In the first line, <code><big>callTable</big></code> is stored into the Stack Pointer (SP). Please note that altering the Stack Pointer can be potentially damaging. You'll probably want to save the contents of SP before using a call table. If used properly, call tables will prove to be very efficient. It is, as you can see, a very complex way of calling routines. And in fact, they don't always make your programs more efficient. Generally, you will only want to use call tables when you are passing a different parameters to several consecutive subroutines.<br>&nbsp;
+										<li>Never use:<code><big><dd>dec B<dd>jr NZ,loop</big></code><br>Use:<code><big><dd>djnz loop</big></code><br>The <code><big>djnz</big></code> instruction decreases B by one, and if the resulting value is nonzero, makes a relative jump to the specified label.<br>&nbsp;
+										<li>Try to rearrange code so that you can use more efficient instructions. For instance:<code><big><dd>push BC<dd>ld B,H<dd>ld C,L<dd>pop HL<dd>dec D<dd>jr NZ,loop</big></code><br>This should be optimized into<code><big><dd>ex DE,HL<dd>djnz loop</big></code><br>Here, we switched BC and DE so that we could use <code><big>ex DE,HL</big></code> and <code><big>djnz</big></code> instead.<br>&nbsp;
+										<li>Never use:<code><big><dd>ld A,B<dd>neg</big></code><br>Instead use:<code><big><dd>xor A<dd>sub B</big></code><br>&nbsp;
+										<li>Never use:<code><big><dd>ld A,D<dd>sub $D3<dd>neg</big></code><br>Instead use:<code><big><dd>ld A,$D3<dd>sub D</big></code><br>&nbsp;
+										<li>Try to avoid using the ASM_FLAGs (ASM_FLAG1 through ASM_FLAG6) whenever possible. If there are any unused registers, you could simply use the register to store flags. You could also let HL point to a memory location at which the flags could be stored. For an example:<code><big><dd>res 5,(IY+ASM_FLAG1)<dd>set 2,(IY+ASM_FLAG3)<dd>...<dd>bit 2,(IY+ASM_FLAG3)<dd>jr NZ,bitIsSet<dd>bit 5,(IY+ASM_FLAG1)<dd>ret NZ<dd>set 5,(IY+ASM_FLAG1)</big></code><br>In this example, we will assume D and HL are not used nor destroyed in the program. In such case, we would optimize the code by using D and HL to store the flags:<code><big><dd>ld HL,appBackUpScreen<dd>set 5,(HL)<dd>set 2,D<dd>...<dd>bit 2,D<dd>jr NZ,bitIsSet<dd>bit 5,(HL)<dd>ret NZ<dd>set 5,(HL)</big></code><br>In this example, it would actually be more efficient to just use D to store all the flags (there are 8 bits in D, and only 1 is being used here), rather than bother with the <code><big>ld HL,appBackUpScreen</big></code> stuff. But the point is, you should always try to use (HL) or an 8-bit register instead of ASM_FLAGs.<br>&nbsp;
+										<li>Always use <code><big>jr</big></code> instead of <code><big>jp</big></code> whenever possible. <code><big>jr</big></code> is actually slower (by only 2 cycles), but uses only 2 bytes, whereas <code><big>jp</big></code> uses 3. Your compiler should let you know if a jump is too far for a relative jump.<br>&nbsp;
+										<li>Never use:<code><big><dd>ld A,(ADDR)<dd>inc A<dd>ld (ADDR),A</big></code><br>Use:<code><big><dd>ld HL,ADDR<dd>inc (HL)</big></code><br>The same goes for <code><big>dec</big></code> as well.<br>&nbsp;
+										<li>Consider this:<code><big><dd>ld A,$12<dd>...<dd>xor A<dd>inc A ; Reset zero flag</big></code><br>In this example, <code><big>xor A</big></code> and <code><big>or A</big></code> are used to reset the zero flag. But if A is not destroyed within the <code><big>...</big></code> then you could instead just use <code><big>and A</big></code>. Using <code><big>and A</big></code> will make no changes to A, but will effect the flags.<br>&nbsp;
+										<li>Please remember that (HL) can be used instead of an 8-bit register in nearly all the instructions. Here is are some examples:
+											<table border=1 cellpadding=5 cellspacing=0 align=center>
+												<tr><td><code>ld <i>r</i>,(HL)</code></td><td><code>ld (HL),<i>r</i></code></td><td><code>ld (HL),<i>nn</i></code></td></tr>
+												<tr><td><code>inc (HL)</code></td><td colspan=2><code>dec (HL)</code></td></tr>
+												<tr><td><code>adc A,(HL)</code></td><td colspan=2><code>sbc A,(HL)</code></td></tr>
+												<tr><td><code>bit <i>b</i>,(HL)</code></td><td><code>set <i>b</i>,(HL)</code></td><td><code>res <i>b</i>,(HL)</code></td></tr>
+												<tr><td><code>sra (HL)</code></td><td><code>sla (HL)</code></td><td><code>srl (HL)</code></td></tr>
+												<tr><td><code>rlc (HL)</code></td><td colspan=2><code>rrc (HL)</code></td></tr>
+												<tr><td><code>rl (HL)</code></td><td colspan=2><code>rr (HL)</code></td></tr>
+												<tr><td><code>and (HL)</code></td><td><code>or (HL)</code></td><td><code>xor (HL)</code></td></tr>
+												<tr><td><code>add A,(HL)</code></td><td colspan=2><code>sub (HL)</code></td></tr>
+												<tr><td colspan=3><code>cp (HL)</code></td></tr>
+												<tr><td colspan=3><code>jp (HL)</code></td></tr>
+											</table><div align=center><i>b</i> is a valid bit number 0 to 7<br><i>r</i> is any 8-bit register<br><i>nn</i> is any 8-bit number from 0 to 255</div><br>NOTE: <code><big>jp (HL)</big></code> jumps to the address stored in HL, not the address stored in the indirect contents of <code><big>(HL)</big></code>.<br>&nbsp;
+										<li>If you need to change one bit at one of the index registers, you might consider using doing this:<code><big><dd><dd>bit 3,(IY+$05) ; check bit<dd><dd>jr Z,bit_reset ; set bit if bit is reset<dd><dd>res 3,(IY+$05) ; reset bit if it was set<dd><dd>jr bit_changed ; omit the following instruction...<dd>bit_reset:<dd><dd>set 3,(IY+$05)<dd>bit_changed:<dd><dd>...</big></code><br>In all, this uses 16 bytes. You could use half the amount of memory by instead doing this:<code><big><dd><dd>ld A,(IY+$05) ; store the byte in A<dd><dd>xor %00001000 ; change the state of bit 3<dd><dd>ld (IY+$05),A ; save the altered byte<dd></big></code><br>8 bytes saved!<br>&nbsp;
+										<li>If you wish to change any of the system flags for a TI calculator, you could make the process used in trick #28 even shorter, using HL to point to the location:<code><big><dd><dd>ld HL,_flags+$05<dd><dd>ld A,%00001000 ; mask<dd><dd>xor (HL)<dd><dd>ld (HL),A</big></code><br>This trick uses only 7 bytes.<br>&nbsp;
+										<li>Often times you'll have several variables that need to have specific value stored in them at the same point in the program. Conventionally, you would do it this way:<code><big><dd>var1 = temp<dd>var2 = temp + 1<dd>var3 = temp + 2<dd>var4 = temp + 3<dd><dd>ld A,56<dd><dd>ld (var1),A<dd><dd>ld A,1<dd><dd>ld A,(var2)<dd><dd>ld A,18<dd><dd>ld (var3),A<dd><dd>ld A,255<dd><dd>ld (var4),A</big></code><br>As long as there are more than two variables, and all the variables are sequentially placed in the memory, you could instead use this:<code><big><dd><dd>ld HL,temp<dd><dd>ld (HL),56<dd><dd>inc HL<dd><dd>ld (HL),1<dd><dd>inc HL<dd><dd>ld (HL),18<dd><dd>inc HL<dd><dd>ld (HL),255</big></code>
+									</ol>
+								</font></div>
+							</td></tr>
+						</table>
+						&nbsp;
+						<a name="tricks"></a>
+						<table width=90% cellspacing=0 cellpadding=5 border=0 align=center bgcolor=#dddddd>
+							<th height=5 bgcolor=#006080>
+								<div align=center><font face="Verdana,Arial,Helvetica,sans-serif" size=2 color=#ffffff>
+								<strong>Useful Tricks</strong>
+								</font></div>
+							</th>
+							<tr valign=top><td>
+								<div align=justify><font face="Verdana,Arial,Helvetica,sans-serif" size=2 color=#000000>
+									<p>These tricks don't save memory or time, but they can still be useful in certain situations.</p>
+									<ol start=1>
+										<li>Whenever you want to multiply A by 2, you might consider using:<code><big><dd>add A,A</big></code><br>But what if you don't want it to effect the zero flag, you can instead use:<code><big><dd>rlca</big></code><br>The <code><big>rlca</big></code> instruction rotates the accumulator one bit to the left, which if you do the math, you'll find it multiplies A by 2. Please note that the <code><big>rlca</big></code> instruction <i>does effect the carry flag</i>, however.<br>&nbsp;
+										<li>In trick #1, you learned that rotating the accumulator one bit to the left will multiply it by 2. So it would make since to say that by rotating the accumulator one bit to the <i>right</i>, you will <i>divide</i> A by 2. Indeed, this is true. However, dividing numbers using rotations can have arbitrary results. For instance, what if A is odd? Well, any number is odd if and only if bit 0 is set. So by rotating an odd number one bit to the right, you will have have simply moved bit 0 to bit 7, making the number very large (or if you use two's complement, the number will be negative). Here's an example:<code><big><dd><dd>ld E,$00<dd>DivideLoop:<dd><dd>inc E<dd><dd>sub $02 ; C is set if result is < 0<dd><dd>jr NC,DivideLoop<dd><dd>ld A,E</big></code><br>This is extremely inefficient way of division! You should instead simply use this:<code><big><dd>rrca</big></code><br>That's it! But remember, this trick only works when <i>bit 0 of A is reset</i>, or in other words, A is even. So long as bit 0 remains reset, <code><big>rrca</big></code> is the best method of division. Should the case arise that you need to divide by 2 (or a multiple of 2) and not have to worry about odd numbers, you can afterwards mask out the unwanted bits using the <code><big>and</big></code> instruction. Here's an example:<code><big><dd>rrca<dd>rrca ; A has been divided by 4<dd>and %10000000 ; Mask out unwanted sign bit</big></code><br>&nbsp;
+										<li>The last trick showed how to divide the accumulator with respect to the sign of the number (signed is when bit 0 is set). To avoid complications involved when rotating bits, you can alternatively use <i>shifts</i>. For instance, the <code><big>srl</big></code> instruction does the same as <code><big>rrca</big></code>, except it can be used on any register. More importantly, it resets bit 0, thus avoiding the complications associated with carry and odd numbers. However, <code><big>srl</big></code> uses 2 bytes, 8 cycles, whereas <code><big>rrca</big></code> uses only 1 byte, 4 cycles. So whenever you need to divide by two and still keep the number unsigned, then you should always use <code><big>srl</big></code>. However, if you need to divide by <i>4 or more</i>, then you should always use <code><big>rrca</big></code> however many times necessary, and then mask out the sign bit.<br>&nbsp;
+										<li>If you are writing a program for any of the Z80-based calculators (73,82,83,83 Plus,85,86), there is a very useful trick you can use when working with characters. There's only one bit in the character value differing between upper and lower case for the same letter. All you need to do is complement bit 5 using <code><big>xor %00100000</big></code> (given the character value is stored in the accumulator). This is very useful if you want to have a case insensitive search or text input routine.<br>Even better, the TI-OS flag for lowercase is also stored in bit 5, so you could take that bit and mask it with the character to change the character to reflect the state of the flag:<code><big><dd>ld A,(IY+shiftFlags)<dd>and %00100000<dd>or C</big></code><br>Assuming the character value is stored in C, after this code is executed, the accumulator will hold the value of the character with the same case as the current setting. This trick will save you much time and effort when working with case sensistivity!<br>&nbsp;
+										<li>Similar to trick #4, it is possible to make a letter out of a number (1 for A, 2 for B, etc.) by simply changing the state of bit 6. This will change the number in to the corresponding upper case letter. If you wanted to change it to the corresponding lower case letter, you would simply mask both bit 5 and bit 6. Very useful in text input routines!
+									</ol>
+								</font></div>
+							</td></tr>
+						</table>
+						<div align=justify><font face="Verdana,Arial,Helvetica,sans-serif" size=2 color=#000000><br>Please note that this list is NOT complete. New tricks are continually being added. For a list of the most up-to-date tricks, view the <a href="http://home.graffiti.net/fortress_productions/programming/z80asm.html">online version</a> of this guide. The following is a list of contributors.</font></div>
+						<a name="#contrib"></a><br><div align=center><font face="Verdana,Arial,Helvetica,sans-serif" size=2 color=#000000>Contributors:</font></div>
+						<table border=0 cellpadding=0 cellspacing=5 align=center><tr><td><div align=center><tr><td>
+							<div align=left><font face="Verdana,Arial,Helvetica,sans-serif" size=2 color=#000000><ul type=disc><li><a href="mailto:leif.astrand@multi.fi">Leif Åstrand</a><ul type=circle><li>Memory Consumption - #17, 27, 28, 30<li>Useful Tricks - #4, 5</ul></ul></font></div>
+						</td></tr></table>
+						<table border=0 cellpadding=0 cellspacing=0 align=center size=50%><tr><td>
+							<div align=justify><font face="Verdana,Arial,Helvetica,sans-serif" size=2 color=#000000>If you have any additions and/or changes you think should be made to this guide, please <a href="mailto:ahz0123@mail.ecu.edu">e-mail</a> me. Of coarse, you will receive full credit for your contributions. Thanks!</font></div>
+						</td></tr></table>
+						<p></p>
+						<div align=left><font face="Verdana,Arial,Helvetica,sans-serif" size=2 color=#000000>&raquo; <a href="#top">Back to Top</a></font></div>
+					</td></tr>
+				</table>
+			</td></tr>
+		</table>
+	</td></tr>
+</table>
+<table cellspacing=0 cellpadding=5 width=100% height=10 border=0 align=center bgcolor=#ffffff valign=bottom>
+	<tr valign=bottom><td>
+		<div align=left><font face="Arial,Verdana,Helvetica,sans-serif" size=1>Copyright &copy; 2003 Fortress Productions</font></div>
+	</td><td>
+		<div align=right><font face="Arial,Verdana,Helvetica,sans-serif" size=1><a href="mailto:ahz0123@mail.ecu.edu">E-Mail Author</a></font></div>
+	</td></tr>
+</table>
+</body>
+</html>

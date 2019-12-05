@@ -1,0 +1,105 @@
+Assembly Programming Basics
+Compiled by Josh Mottaz
+April 11, 2003
+
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+Table of Contents
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+I. Files & Folders
+II. Help
+III. Contact Information
+IV. Misc. Stuff
+
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+I. Files & Folders
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+A. Folders
+	1. TI Assembler
+	Contains the necessary
+	files to assemble your
+	assembly programs
+	2. Walkthrough
+	This is a walkthrough to learning ASM
+	made by Jeff Chai.  It helped me with
+	many questions I had, and It should
+	help you as well.  It contains sample
+	programs, how to start, etc.
+B. Files
+
+Assembly_Programming_Basics\
+	1. Assembly Programming.txt
+	The file you are reading!!!
+
+Assembly_Programming_Basics\TI_Assembler\
+	1. asm.bat
+	Takes the information from compile.bat
+	and runs Tasm.exe
+	2. compile.bat
+	After editing, tells asm.bat the file
+	name of your ASM program.
+	3. Copyright.txt
+	Copyright information for the Tasm
+	Assembler.
+	4. OBJHEX.exe
+	Converts the *.hex file (Output by TASM)
+	into a *.8xp calculator file.
+	5. Tasm.exe
+	The program that assembles (Hence the name
+	Assembly) your program into Hexadecimal
+	(Or Hex).
+	6. Tasm80.tab
+	No idea what this file does :)
+	7. ti86plus.inc
+	This file contains all the tokens used
+	by the calculator and assembler.  it is
+	an essential .inc file (Explained in Jeff
+	Chai's ASM Walkthrough).
+
+Assembly_Programming_Basics\Walkthrough
+	1. ti83pasm.hlp
+	The TI-83 Plus ASM walkthrough, very handy.
+	This is what you will use to help you learn
+	Assembly!
+	2. ti83pasm.GID (Hidden File)
+	Not sure what this is for, I believe it is
+	a temporary file.  Note: You cannot see it
+	unless hidden files are viewable.
+	3. ti83pasm.fts
+	I don't know why I am describing these files,
+	as you will not need them.  Just for the sake
+	of being complete I guess.  Oh well, I have no
+	idea what this does either.
+
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+III. Help
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+Everthing you need to know to start programming ASM
+will be explained to you in the Help file.  Just open it up,
+go to the first page, and follow the instructions.  Also, if
+you have any questions feel free to ask me.  I will get back
+to you within 1-2 days.  Good Luck!
+
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+IV. Contact Information
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+Josh Mottaz
+Ticalc.org Member
+Screen Name (For Various Things): Gerhalt\Rhode
+E-mail: tgrmtn@Nocharge.com
+
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+				The End
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+Afterwards Note: If I forgot anything or you have trouble tell me.
+
+
+
+
+
+
+
